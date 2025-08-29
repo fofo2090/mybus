@@ -106,3 +106,53 @@ coverage/
 # Test related
 test_driver/
 integration_test/driver/
+
+# Additional build and cache directories
+**/build/
+**/.dart_tool/
+**/pubspec.lock
+**/Podfile.lock
+**/package-lock.json
+**/yarn.lock
+**/node_modules/
+**/.gradle/
+**/DerivedData/
+**/.build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+
+# IDE and editor files
+**/.vscode/
+**/.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+
+# OS generated files
+**/.DS_Store
+**/Thumbs.db
+**/*.tmp
+**/*.temp
+**/*~
+
+# Large binary files that shouldn't be in version control
+**/*.apk
+**/*.ipa
+**/*.app
+**/*.exe
+**/*.dmg
+**/*.zip
+**/*.tar.gz
+**/*.rar
+
+# Firebase and sensitive files
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_app_id_file.json
+**/.env
+**/.env.local
+**/.env.production
+**/.env.staging
