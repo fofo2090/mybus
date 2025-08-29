@@ -1,7 +1,6 @@
 package com.example.mybus
 
 import androidx.multidex.MultiDexApplication
-import io.flutter.app.FlutterApplication
 
 class MainApplication : MultiDexApplication() {
     
