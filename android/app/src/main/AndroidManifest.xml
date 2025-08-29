@@ -46,7 +46,7 @@
 
     <application
         android:label="كيدز باص"
-        android:name="com.example.kidsbus.MainApplication"
+        android:name="com.example.mybus.MainApplication"
         android:icon="@mipmap/launcher_icon"
         android:allowBackup="true"
         android:requestLegacyExternalStorage="true"
@@ -91,7 +91,7 @@
 
         <!-- Custom FCM Service -->
         <service
-            android:name="com.example.kidsbus.MyFirebaseMessagingService"
+            android:name="com.example.mybus.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

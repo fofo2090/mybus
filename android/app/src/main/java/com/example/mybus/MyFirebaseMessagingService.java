@@ -1,4 +1,4 @@
-package com.example.kidsbus;
+package com.example.mybus;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -16,7 +16,6 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService;
-import com.example.mybus.R;
 
 public class MyFirebaseMessagingService extends FlutterFirebaseMessagingService {
     private static final String TAG = "MyFirebaseMsgService";
@@ -70,7 +69,7 @@ public class MyFirebaseMessagingService extends FlutterFirebaseMessagingService 
      * إنشاء وعرض إشعار مخصص
      */
     private void sendNotification(String title, String messageBody) {
-        Intent intent = new Intent(this, com.example.mybus.MainActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_IMMUTABLE);
@@ -80,8 +79,8 @@ public class MyFirebaseMessagingService extends FlutterFirebaseMessagingService 
         
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_notification)
-                        .setContentTitle(title != null ? title : "كيدز باص")
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setContentTitle(title != null ? title : "MyBus")
                         .setContentText(messageBody)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
@@ -94,7 +93,7 @@ public class MyFirebaseMessagingService extends FlutterFirebaseMessagingService 
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(messageBody)
                                 .setBigContentTitle(title)
-                                .setSummaryText("كيدز باص"));
+                                .setSummaryText("MyBus"));
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -102,9 +101,9 @@ public class MyFirebaseMessagingService extends FlutterFirebaseMessagingService 
         // إنشاء قناة الإشعارات للأندرويد 8.0 وما فوق
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelId,
-                    "كيدز باص - الإشعارات",
+                    "MyBus - الإشعارات",
                     NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("إشعارات تطبيق كيدز باص للنقل المدرسي");
+            channel.setDescription("إشعارات تطبيق MyBus للنقل المدرسي");
             channel.enableLights(true);
             channel.enableVibration(true);
             channel.setShowBadge(true);
