@@ -360,7 +360,11 @@ class _ParentStudentLinkingScreenState extends State<ParentStudentLinkingScreen>
 
   Widget _buildAvailableParentsList(StudentModel student) {
     return StreamBuilder<List<UserModel>>(
+<<<<<<< HEAD
       stream: _databaseService.getAvailableParents(),
+=======
+      stream: _getAllActiveParents(),
+>>>>>>> 30d4977 (fix connect student)
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -506,7 +510,11 @@ class _ParentStudentLinkingScreenState extends State<ParentStudentLinkingScreen>
   // دالة جديدة لبناء قائمة أولياء الأمور للربط الجماعي
   Widget _buildAvailableParentsListForMultiLink() {
     return StreamBuilder<List<UserModel>>(
+<<<<<<< HEAD
       stream: _databaseService.getAvailableParents(),
+=======
+      stream: _getAllActiveParents(),
+>>>>>>> 30d4977 (fix connect student)
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -622,4 +630,32 @@ class _ParentStudentLinkingScreenState extends State<ParentStudentLinkingScreen>
       }
     }
   }
+<<<<<<< HEAD
+=======
+
+  /// Get all active parents (allowing multiple students per parent)
+  Stream<List<UserModel>> _getAllActiveParents() {
+    return _databaseService.firestore
+        .collection('users')
+        .where('userType', isEqualTo: 'parent')
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          List<UserModel> allParents = [];
+
+          for (var doc in snapshot.docs) {
+            try {
+              final parent = UserModel.fromMap(doc.data());
+              allParents.add(parent);
+            } catch (e) {
+              print('❌ Error parsing parent data: $e');
+            }
+          }
+
+          // Sort by name
+          allParents.sort((a, b) => a.name.compareTo(b.name));
+          return allParents;
+        });
+  }
+>>>>>>> 30d4977 (fix connect student)
 }
