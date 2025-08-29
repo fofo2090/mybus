@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- لون الإشعارات الأساسي -->
+    <color name="notification_color">#1E88E5</color>
+    
+    <!-- ألوان إضافية للتطبيق -->
+    <color name="primary_color">#1E88E5</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="accent_color">#FF6B6B</color>
+    
+    <!-- ألوان الإشعارات حسب النوع -->
+    <color name="student_notification_color">#4CAF50</color>
+    <color name="bus_notification_color">#FF9800</color>
+    <color name="emergency_notification_color">#F44336</color>
+    <color name="admin_notification_color">#9C27B0</color>
+</resources>

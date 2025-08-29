@@ -1,0 +1,18 @@
+{
+  "build-mode": "debug",
+  "target-platform": "android-arm64",
+  "dart-defines": [],
+  "dart-obfuscation": false,
+  "track-widget-creation": true,
+  "tree-shake-icons": false,
+  "enable-experiment": [],
+  "split-debug-info": null,
+  "dart2js-optimization": null,
+  "performance-measurement-file": null,
+  "bundle-sksl-path": null,
+  "code-size-directory": null,
+  "null-assertions": true,
+  "init-with-assets": true,
+  "manifest-update-check": true,
+  "use-application-binary": false
+}

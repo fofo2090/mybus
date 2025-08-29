@@ -1,0 +1,165 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserData().userType == 'admin';
+    }
+
+    function isSupervisor() {
+      return isAuthenticated() && getUserData().userType == 'supervisor';
+    }
+
+    function isParent() {
+      return isAuthenticated() && getUserData().userType == 'parent';
+    }
+
+    function isValidImageFile() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 5 * 1024 * 1024; // Max 5MB
+    }
+
+    function isStudentParent(studentId) {
+      return firestore.exists(/databases/(default)/documents/parent_children/$(request.auth.uid + '_' + studentId));
+    }
+
+    // Student profile images - صور الطلاب
+    match /students/{studentId}/profile.{extension} {
+      // الأدمن والمشرف يمكنهم رفع وقراءة صور الطلاب
+      allow read, write: if (isAdmin() || isSupervisor()) && isValidImageFile();
+
+      // ولي الأمر يمكنه قراءة صورة طفله فقط
+      allow read: if isParent() && isStudentParent(studentId);
+    }
+
+    // Student photos folder - مجلد صور الطلاب العام
+    match /student_photos/{fileName} {
+      // الأدمن والمشرف يمكنهم رفع وقراءة جميع صور الطلاب
+      allow read, write: if (isAdmin() || isSupervisor()) && isValidImageFile();
+
+      // ولي الأمر يمكنه رفع وقراءة صور أطفاله فقط
+      allow read, write: if isParent() && isValidImageFile();
+    }
+
+    // Bus photos - صور الحافلات
+    match /bus_photos/{fileName} {
+      // الأدمن والمشرف فقط يمكنهم رفع صور الحافلات
+      allow read, write: if (isAdmin() || isSupervisor()) && isValidImageFile();
+
+      // الجميع يمكنهم قراءة صور الحافلات
+      allow read: if isAuthenticated();
+    }
+
+    // Profile photos - صور الملفات الشخصية
+    match /profile_photos/{userId}/{fileName} {
+      // المستخدم يمكنه رفع وقراءة صوره الشخصية
+      allow read, write: if isAuthenticated() &&
+                           request.auth.uid == userId &&
+                           isValidImageFile();
+
+      // الأدمن يمكنه قراءة جميع الصور الشخصية
+      allow read: if isAdmin();
+    }
+
+    // Default rule - منع الوصول لأي ملف غير محدد
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Student photos folder - مجلد صور الطلاب الجديد
+    match /student_photos/{fileName} {
+      // الأدمن والمشرف يمكنهم رفع وقراءة جميع صور الطلاب
+      allow read, write: if request.auth != null &&
+        (isAdmin() || isSupervisor());
+
+      // ولي الأمر يمكنه رفع وقراءة صور أطفاله
+      allow read, write: if request.auth != null &&
+        isParent() &&
+        isValidImageFile();
+    }
+    
+    // QR Code images - صور أكواد QR
+    match /qr-codes/{studentId}.{extension} {
+      // الأدمن يمكنه رفع وقراءة أكواد QR
+      allow read, write: if request.auth != null && isAdmin();
+      
+      // المشرف يمكنه قراءة أكواد QR فقط
+      allow read: if request.auth != null && isSupervisor();
+      
+      // ولي الأمر يمكنه قراءة كود QR لطفله فقط
+      allow read: if request.auth != null && 
+        isParent() && 
+        isStudentParent(studentId);
+    }
+    
+    // Reports and documents - التقارير والوثائق
+    match /reports/{reportId}.{extension} {
+      // الأدمن فقط يمكنه رفع وقراءة التقارير
+      allow read, write: if request.auth != null && isAdmin();
+    }
+    
+    // App assets - أصول التطبيق
+    match /assets/{assetPath=**} {
+      // الجميع يمكنهم قراءة أصول التطبيق
+      allow read: if true;
+      
+      // الأدمن فقط يمكنه رفع أصول التطبيق
+      allow write: if request.auth != null && isAdmin();
+    }
+    
+    // Helper functions - دوال مساعدة
+    
+    // التحقق من أن المستخدم أدمن
+    function isAdmin() {
+      return exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+        get(/databases/(default)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    // التحقق من أن المستخدم مشرف
+    function isSupervisor() {
+      return exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+        get(/databases/(default)/documents/users/$(request.auth.uid)).data.userType == 'supervisor';
+    }
+    
+    // التحقق من أن المستخدم ولي أمر
+    function isParent() {
+      return exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+        get(/databases/(default)/documents/users/$(request.auth.uid)).data.userType == 'parent';
+    }
+    
+    // التحقق من أن المستخدم هو ولي أمر الطالب
+    function isStudentParent(studentId) {
+      return exists(/databases/(default)/documents/students/$(studentId)) &&
+        get(/databases/(default)/documents/students/$(studentId)).data.parentId == request.auth.uid;
+    }
+    
+    // التحقق من حجم الملف (أقل من 5 ميجابايت)
+    function isValidFileSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+    
+    // التحقق من نوع الملف (صور فقط)
+    function isImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // التحقق من نوع ملف PDF
+    function isPDFFile() {
+      return request.resource.contentType == 'application/pdf';
+    }
+
+    // التحقق من صحة ملف الصورة (نوع وحجم)
+    function isValidImageFile() {
+      return isImageFile() && isValidFileSize();
+    }
+  }
+}

@@ -1,0 +1,136 @@
+// Firebase Storage Security Rules for MyBus App
+// Copy these rules to Firebase Console > Storage > Rules
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Student Photos - Allow authenticated users to upload and read
+    match /student_photos/{imageId} {
+      // Allow read for authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write for authenticated users with size and type restrictions
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024  // Max 5MB
+                   && request.resource.contentType.matches('image/.*');  // Only images
+    }
+    
+    // Bus Photos - Allow authenticated users to upload and read
+    match /bus_photos/{imageId} {
+      // Allow read for authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write for authenticated users with size and type restrictions
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024  // Max 10MB
+                   && request.resource.contentType.matches('image/.*');  // Only images
+    }
+    
+    // Profile Photos - Allow authenticated users to upload and read
+    match /profile_photos/{imageId} {
+      // Allow read for authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write for authenticated users with size and type restrictions
+      allow write: if request.auth != null
+                   && request.resource.size < 3 * 1024 * 1024  // Max 3MB
+                   && request.resource.contentType.matches('image/.*');  // Only images
+    }
+    
+    // Test Images - Allow for testing purposes (remove in production)
+    match /test_images/{imageId} {
+      // Allow read/write for authenticated users (for testing)
+      allow read, write: if request.auth != null;
+    }
+    
+    // Default rule - deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+/*
+INSTRUCTIONS TO APPLY THESE RULES:
+
+1. Go to Firebase Console: https://console.firebase.google.com/
+2. Select your project: mybus-5a992
+3. Go to Storage section
+4. Click on "Rules" tab
+5. Replace the existing rules with the rules above
+6. Click "Publish"
+
+CURRENT RULES (if you want to be more permissive for testing):
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+
+VERY PERMISSIVE RULES (for initial testing only - NOT SECURE):
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+TESTING STEPS:
+
+1. First try with permissive rules to test basic functionality
+2. Then apply the secure rules above
+3. Test that authenticated users can upload
+4. Test that file size and type restrictions work
+
+TROUBLESHOOTING:
+
+If you get permission errors:
+1. Check that user is authenticated
+2. Check file size (must be under limits)
+3. Check file type (must be image)
+4. Check Firebase Console > Storage > Rules for syntax errors
+5. Check Firebase Console > Storage > Usage for quota limits
+
+COMMON ERRORS:
+
+1. "permission-denied" - User not authenticated or rules too restrictive
+2. "storage/object-not-found" - Path doesn't exist or no read permission
+3. "storage/unauthorized" - Authentication token invalid
+4. "storage/retry-limit-exceeded" - Network issues or server overload
+5. "storage/invalid-format" - File format not supported
+6. "storage/invalid-argument" - Invalid file name or metadata
+
+RECOMMENDED PRODUCTION RULES:
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Student photos - only parents can upload their children's photos
+    match /student_photos/{imageId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.auth.uid == resource.metadata.parentId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Admin uploads - only admin users
+    match /bus_photos/{imageId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.auth.token.admin == true
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+*/

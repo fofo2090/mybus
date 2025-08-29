@@ -1,0 +1,295 @@
+<!-- Buses Management Page -->
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-1">
+                <i class="fas fa-bus text-warning me-2"></i>
+                إدارة السيارات
+            </h2>
+            <p class="text-muted mb-0">إدارة سيارات النقل المدرسي والسائقين</p>
+        </div>
+        <button type="button" class="btn btn-warning" id="addBusBtn" onclick="showAddBusModal()">
+            <i class="fas fa-plus me-2"></i>
+            إضافة سيارة
+        </button>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">إجمالي السيارات</h5>
+                            <h3 class="mb-0" id="totalBuses">0</h3>
+                        </div>
+                        <i class="fas fa-bus fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">إجمالي الطلاب</h5>
+                            <h3 class="mb-0" id="totalStudentsInBuses">0</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">سيارات مكيفة</h5>
+                            <h3 class="mb-0" id="airConditionedBuses">0</h3>
+                        </div>
+                        <i class="fas fa-snowflake fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">سيارات نشطة</h5>
+                            <h3 class="mb-0" id="activeBuses">0</h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card mb-4">
+        <div class="card-header bg-white border-bottom">
+            <h6 class="mb-0">
+                <i class="fas fa-filter me-2"></i>
+                البحث والفلترة
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">البحث</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="busSearch"
+                               placeholder="البحث برقم اللوحة، السائق، أو خط السير...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">خط السير</label>
+                    <select class="form-select" id="routeFilter">
+                        <option value="">جميع الخطوط</option>
+                        <option value="المعادي - المدرسة">المعادي - المدرسة</option>
+                        <option value="النزهة - المدرسة">النزهة - المدرسة</option>
+                        <option value="مدينة نصر - المدرسة">مدينة نصر - المدرسة</option>
+                        <option value="الزمالك - المدرسة">الزمالك - المدرسة</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">الحالة</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">جميع الحالات</option>
+                        <option value="active">نشطة</option>
+                        <option value="inactive">غير نشطة</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">التكييف</label>
+                    <select class="form-select" id="acFilter">
+                        <option value="">الكل</option>
+                        <option value="true">مكيفة</option>
+                        <option value="false">غير مكيفة</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">الإجراءات</label>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()" title="مسح الفلاتر">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportBuses()" title="تصدير">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buses Grid -->
+    <div class="row" id="busesContainer">
+        <!-- Buses will be loaded here -->
+    </div>
+</div>
+
+<!-- Add/Edit Bus Modal -->
+<div class="modal fade" id="addBusModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="busModalTitle">إضافة سيارة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addBusForm" onsubmit="event.preventDefault(); return false;">
+                <div class="modal-body">
+                    <input type="hidden" id="busId">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="plateNumber" class="form-label">رقم اللوحة *</label>
+                            <input type="text" class="form-control" id="plateNumber" name="plateNumber" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="capacity" class="form-label">سعة السيارة *</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" 
+                                   min="10" max="50" value="30" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">وصف السيارة *</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="2" required placeholder="مثال: باص مدرسي حديث"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="driverName" class="form-label">اسم السائق *</label>
+                            <input type="text" class="form-control" id="driverName" name="driverName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="driverPhone" class="form-label">رقم هاتف السائق *</label>
+                            <input type="tel" class="form-control" id="driverPhone" name="driverPhone" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="route" class="form-label">خط السير *</label>
+                        <input type="text" class="form-control" id="route" name="route" 
+                               required placeholder="مثال: المعادي - المدرسة">
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="hasAirConditioning" 
+                                   name="hasAirConditioning">
+                            <label class="form-check-label" for="hasAirConditioning">
+                                <i class="fas fa-snowflake text-info me-2"></i>
+                                السيارة مكيفة
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-warning" onclick="saveBus()">
+                        <i class="fas fa-save me-2"></i>
+                        حفظ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Buses JavaScript loaded from main app.js -->
+
+<script>
+// Ensure modal functionality works and prevent form submission
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚌 Buses page loaded');
+
+    // Prevent form submission completely
+    const form = document.getElementById('addBusForm');
+    if (form) {
+        // Remove any existing action and method
+        form.removeAttribute('action');
+        form.removeAttribute('method');
+
+        // Add multiple event listeners to prevent submission
+        form.addEventListener('submit', function(e) {
+            console.log('🚫 Form submit prevented');
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        form.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.type !== 'textarea') {
+                console.log('🚫 Enter key submit prevented');
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        console.log('✅ Form submission prevention set up');
+    }
+
+    // Test modal functionality
+    const addBusBtn = document.getElementById('addBusBtn');
+    const modal = document.getElementById('addBusModal');
+
+    console.log('Add bus button:', addBusBtn);
+    console.log('Modal element:', modal);
+
+    if (addBusBtn && !addBusBtn.onclick) {
+        addBusBtn.addEventListener('click', function() {
+            console.log('🔘 Add bus button clicked (event listener)');
+
+            if (typeof showAddBusModal === 'function') {
+                showAddBusModal();
+            } else if (window.busManager) {
+                window.busManager.showAddBusModal();
+            } else {
+                console.error('❌ No bus manager or function available');
+
+                // Fallback: show modal directly
+                if (modal) {
+                    try {
+                        const bootstrapModal = new bootstrap.Modal(modal);
+                        bootstrapModal.show();
+                        console.log('✅ Modal shown via fallback');
+                    } catch (error) {
+                        console.error('❌ Fallback modal error:', error);
+                        alert('خطأ في إظهار نافذة إضافة السيارة');
+                    }
+                }
+            }
+        });
+    }
+
+    // Add save button event listener as backup
+    const saveBtn = document.querySelector('#addBusModal .btn-warning');
+    if (saveBtn && !saveBtn.onclick) {
+        saveBtn.addEventListener('click', function(e) {
+            console.log('💾 Save button clicked (event listener)');
+            e.preventDefault();
+
+            if (typeof saveBus === 'function') {
+                saveBus();
+            } else if (window.busManager) {
+                window.busManager.saveBus();
+            } else {
+                console.error('❌ No save function available');
+                alert('خطأ: وظيفة الحفظ غير متاحة');
+            }
+        });
+    }
+});
+</script>

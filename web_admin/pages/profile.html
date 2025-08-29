@@ -1,0 +1,285 @@
+<!-- Profile Management Page -->
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div class="mb-3 mb-md-0">
+                    <h2 class="text-gradient mb-2">
+                        <i class="fas fa-user-circle me-2"></i>
+                        الملف الشخصي
+                    </h2>
+                    <p class="text-muted mb-0">إدارة معلومات الحساب الشخصي والإعدادات</p>
+                </div>
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <button class="btn btn-outline-primary" onclick="exportProfile()">
+                        <i class="fas fa-download me-2"></i>
+                        <span class="d-none d-sm-inline">تصدير البيانات</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="editProfile()">
+                        <i class="fas fa-edit me-2"></i>
+                        <span class="d-none d-sm-inline">تعديل الملف</span>
+                        <span class="d-sm-none">تعديل</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <!-- Profile Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="profile-avatar mb-3">
+                        <div class="avatar-circle bg-primary">
+                            <i class="fas fa-user text-white fa-3x"></i>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="changeAvatar()">
+                            <i class="fas fa-camera me-1"></i>
+                            تغيير الصورة
+                        </button>
+                    </div>
+                    <h4 class="mb-1">مدير النظام</h4>
+                    <p class="text-muted mb-3">admin@mybus.com</p>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-primary mb-0">156</h5>
+                                <small class="text-muted">طالب</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-success mb-0">12</h5>
+                                <small class="text-muted">سيارة</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-warning mb-0">8</h5>
+                            <small class="text-muted">مشرف</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2 text-warning"></i>
+                        إجراءات سريعة
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="changePassword()">
+                            <i class="fas fa-key me-2"></i>
+                            تغيير كلمة المرور
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="enableTwoFactor()">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            تفعيل المصادقة الثنائية
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="downloadBackup()">
+                            <i class="fas fa-download me-2"></i>
+                            تحميل نسخة احتياطية
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="viewLoginHistory()">
+                            <i class="fas fa-history me-2"></i>
+                            سجل تسجيل الدخول
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Personal Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user me-2 text-primary"></i>
+                        المعلومات الشخصية
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الاسم الكامل</label>
+                                <input type="text" class="form-control" id="fullName" value="مدير النظام" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="email" value="admin@mybus.com" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" id="phone" value="+966501234567" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المنصب</label>
+                                <input type="text" class="form-control" id="position" value="مدير النظام" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">العنوان</label>
+                            <textarea class="form-control" id="address" rows="2" readonly>الرياض، المملكة العربية السعودية</textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- System Preferences -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cog me-2 text-info"></i>
+                        تفضيلات النظام
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اللغة</label>
+                            <select class="form-select" id="language">
+                                <option value="ar" selected>العربية</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">المنطقة الزمنية</label>
+                            <select class="form-select" id="timezone">
+                                <option value="Asia/Riyadh" selected>الرياض (GMT+3)</option>
+                                <option value="Asia/Dubai">دبي (GMT+4)</option>
+                                <option value="Asia/Kuwait">الكويت (GMT+3)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">تنسيق التاريخ</label>
+                            <select class="form-select" id="dateFormat">
+                                <option value="dd/mm/yyyy" selected>يوم/شهر/سنة</option>
+                                <option value="mm/dd/yyyy">شهر/يوم/سنة</option>
+                                <option value="yyyy-mm-dd">سنة-شهر-يوم</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">تنسيق الوقت</label>
+                            <select class="form-select" id="timeFormat">
+                                <option value="24h" selected>24 ساعة</option>
+                                <option value="12h">12 ساعة</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bell me-2 text-warning"></i>
+                        إعدادات الإشعارات
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                        <label class="form-check-label" for="emailNotifications">
+                            إشعارات البريد الإلكتروني
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="smsNotifications" checked>
+                        <label class="form-check-label" for="smsNotifications">
+                            إشعارات الرسائل النصية
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                        <label class="form-check-label" for="pushNotifications">
+                            الإشعارات الفورية
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="emergencyAlerts" checked>
+                        <label class="form-check-label" for="emergencyAlerts">
+                            تنبيهات الطوارئ
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Profile management functions
+function editProfile() {
+    const form = document.getElementById('profileForm');
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        if (input.id !== 'email') { // Keep email readonly
+            input.removeAttribute('readonly');
+        }
+    });
+    
+    // Change button to save
+    const editBtn = document.querySelector('[onclick="editProfile()"]');
+    editBtn.innerHTML = '<i class="fas fa-save me-2"></i>حفظ التغييرات';
+    editBtn.setAttribute('onclick', 'saveProfile()');
+    editBtn.classList.remove('btn-primary');
+    editBtn.classList.add('btn-success');
+}
+
+function saveProfile() {
+    // Here you would save the profile data
+    alert('تم حفظ التغييرات بنجاح!');
+    
+    // Reset form to readonly
+    const form = document.getElementById('profileForm');
+    const inputs = form.querySelectorAll('input, textarea');
+    
+    inputs.forEach(input => {
+        input.setAttribute('readonly', 'readonly');
+    });
+    
+    // Change button back to edit
+    const saveBtn = document.querySelector('[onclick="saveProfile()"]');
+    saveBtn.innerHTML = '<i class="fas fa-edit me-2"></i>تعديل الملف';
+    saveBtn.setAttribute('onclick', 'editProfile()');
+    saveBtn.classList.remove('btn-success');
+    saveBtn.classList.add('btn-primary');
+}
+
+function changePassword() {
+    alert('سيتم فتح نافذة تغيير كلمة المرور');
+}
+
+function enableTwoFactor() {
+    alert('سيتم تفعيل المصادقة الثنائية');
+}
+
+function downloadBackup() {
+    alert('سيتم تحميل النسخة الاحتياطية');
+}
+
+function viewLoginHistory() {
+    alert('سيتم عرض سجل تسجيل الدخول');
+}
+
+function changeAvatar() {
+    alert('سيتم فتح نافذة تغيير الصورة الشخصية');
+}
+
+function exportProfile() {
+    alert('سيتم تصدير بيانات الملف الشخصي');
+}
+</script>

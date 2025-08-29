@@ -1,0 +1,33 @@
+// ملف لإخفاء تحذيرات Firebase والمكتبات الخارجية
+// Firebase Warnings Suppression Configuration
+
+android {
+    // إعدادات إضافية لإخفاء تحذيرات Firebase
+    lintOptions {
+        disable 'Deprecation'
+        disable 'UncheckedCast'
+        disable 'UnusedResources'
+        checkReleaseBuilds false
+        abortOnError false
+        quiet true
+    }
+}
+
+// إخفاء تحذيرات Java Compilation
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:-deprecation'
+    options.compilerArgs << '-Xlint:-unchecked'
+    options.compilerArgs << '-nowarn'
+}
+
+// إخفاء تحذيرات Kotlin
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        suppressWarnings = true
+    }
+}
+
+// إعدادات ProGuard لإخفاء التحذيرات
+android.buildTypes.all { buildType ->
+    buildType.proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+}

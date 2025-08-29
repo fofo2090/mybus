@@ -1,0 +1,420 @@
+<!-- Notifications Management Page -->
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div class="mb-3 mb-md-0">
+                    <h2 class="text-gradient mb-2">
+                        <i class="fas fa-bell me-2"></i>
+                        إدارة الإشعارات
+                    </h2>
+                    <p class="text-muted mb-0">إدارة وإرسال الإشعارات لجميع المستخدمين</p>
+                </div>
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <button class="btn btn-outline-primary" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double me-2"></i>
+                        <span class="d-none d-sm-inline">تحديد الكل كمقروء</span>
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+                        <i class="fas fa-plus me-2"></i>
+                        <span class="d-none d-sm-inline">إرسال إشعار جديد</span>
+                        <span class="d-sm-none">إرسال</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="stat-card primary">
+                <div class="icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>247</h3>
+                <p class="mb-0">إجمالي الإشعارات</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="stat-card warning">
+                <div class="icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3>23</h3>
+                <p class="mb-0">غير مقروءة</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="stat-card success">
+                <div class="icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <h3>15</h3>
+                <p class="mb-0">مرسلة اليوم</p>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="stat-card info">
+                <div class="icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>156</h3>
+                <p class="mb-0">المستلمين النشطين</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">البحث</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchNotifications"
+                                       placeholder="البحث في الإشعارات...">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">النوع</label>
+                            <select class="form-select" id="filterType">
+                                <option value="">جميع الأنواع</option>
+                                <option value="general">عام</option>
+                                <option value="pickup">استلام</option>
+                                <option value="delay">تأخير</option>
+                                <option value="emergency">طارئ</option>
+                                <option value="reminder">تذكير</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">الحالة</label>
+                            <select class="form-select" id="filterStatus">
+                                <option value="">جميع الحالات</option>
+                                <option value="read">مقروء</option>
+                                <option value="unread">غير مقروء</option>
+                                <option value="sent">مرسل</option>
+                                <option value="pending">في الانتظار</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">التاريخ</label>
+                            <select class="form-select" id="filterDate">
+                                <option value="">جميع التواريخ</option>
+                                <option value="today">اليوم</option>
+                                <option value="yesterday">أمس</option>
+                                <option value="week">هذا الأسبوع</option>
+                                <option value="month">هذا الشهر</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-outline-secondary w-100" onclick="clearNotificationFilters()">
+                                <i class="fas fa-times me-1"></i>
+                                مسح
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2 text-primary"></i>
+                    قائمة الإشعارات
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="refreshNotifications()" title="تحديث">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="exportNotifications()" title="تصدير">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0 ps-4">
+                                <input type="checkbox" class="form-check-input" id="selectAll">
+                            </th>
+                            <th class="border-0">الإشعار</th>
+                            <th class="border-0">المستلم</th>
+                            <th class="border-0">النوع</th>
+                            <th class="border-0">التاريخ</th>
+                            <th class="border-0">الحالة</th>
+                            <th class="border-0 text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notificationsTableBody">
+                        <!-- Sample notifications -->
+                        <tr>
+                            <td class="ps-4">
+                                <input type="checkbox" class="form-check-input notification-checkbox">
+                            </td>
+                            <td>
+                                <div>
+                                    <h6 class="mb-1">تأخير في وصول الباص</h6>
+                                    <small class="text-muted">سيتأخر وصول الباص رقم 123 لمدة 15 دقيقة بسبب الازدحام</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-semibold">أحمد محمد</span>
+                                    <br><small class="text-muted">ولي أمر</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning">تأخير</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-semibold">اليوم</span>
+                                    <br><small class="text-muted">09:30 ص</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">مقروء</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewNotification(1)" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="resendNotification(1)" title="إعادة إرسال">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification(1)" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">
+                                <input type="checkbox" class="form-check-input notification-checkbox">
+                            </td>
+                            <td>
+                                <div>
+                                    <h6 class="mb-1">وصول الطالب للمدرسة</h6>
+                                    <small class="text-muted">وصل الطالب سارة أحمد بأمان إلى المدرسة</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-semibold">فاطمة علي</span>
+                                    <br><small class="text-muted">ولي أمر</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">استلام</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-semibold">اليوم</span>
+                                    <br><small class="text-muted">07:45 ص</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">غير مقروء</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewNotification(2)" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="resendNotification(2)" title="إعادة إرسال">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification(2)" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">
+                                <input type="checkbox" class="form-check-input notification-checkbox">
+                            </td>
+                            <td>
+                                <div>
+                                    <h6 class="mb-1 text-danger">تنبيه طوارئ</h6>
+                                    <small class="text-muted">يرجى التواصل مع إدارة المدرسة فوراً</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-semibold">جميع أولياء الأمور</span>
+                                    <br><small class="text-muted">إشعار جماعي</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">طارئ</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fw-semibold">أمس</span>
+                                    <br><small class="text-muted">03:20 م</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">مرسل</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewNotification(3)" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="resendNotification(3)" title="إعادة إرسال">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification(3)" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal fade" id="sendNotificationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إرسال إشعار جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="sendNotificationForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">نوع الإشعار *</label>
+                            <select class="form-select" id="notificationType" required>
+                                <option value="">اختر النوع</option>
+                                <option value="general">عام</option>
+                                <option value="pickup">استلام</option>
+                                <option value="delay">تأخير</option>
+                                <option value="emergency">طارئ</option>
+                                <option value="reminder">تذكير</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">المستلمين *</label>
+                            <select class="form-select" id="recipients" required>
+                                <option value="">اختر المستلمين</option>
+                                <option value="all_parents">جميع أولياء الأمور</option>
+                                <option value="all_supervisors">جميع المشرفين</option>
+                                <option value="specific_parent">ولي أمر محدد</option>
+                                <option value="bus_route">خط باص محدد</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">عنوان الإشعار *</label>
+                        <input type="text" class="form-control" id="notificationTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">محتوى الإشعار *</label>
+                        <textarea class="form-control" id="notificationContent" rows="4" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="sendEmail">
+                                <label class="form-check-label" for="sendEmail">
+                                    إرسال عبر البريد الإلكتروني
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="sendSMS">
+                                <label class="form-check-label" for="sendSMS">
+                                    إرسال عبر الرسائل النصية
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        إرسال الإشعار
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Notification management functions
+function markAllAsRead() {
+    alert('تم تحديد جميع الإشعارات كمقروءة');
+}
+
+function clearNotificationFilters() {
+    document.getElementById('searchNotifications').value = '';
+    document.getElementById('filterType').value = '';
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterDate').value = '';
+    alert('تم مسح جميع الفلاتر');
+}
+
+function refreshNotifications() {
+    alert('تم تحديث قائمة الإشعارات');
+}
+
+function exportNotifications() {
+    alert('سيتم تصدير الإشعارات');
+}
+
+function viewNotification(id) {
+    alert(`عرض تفاصيل الإشعار رقم ${id}`);
+}
+
+function resendNotification(id) {
+    alert(`إعادة إرسال الإشعار رقم ${id}`);
+}
+
+function deleteNotification(id) {
+    if (confirm('هل أنت متأكد من حذف هذا الإشعار؟')) {
+        alert(`تم حذف الإشعار رقم ${id}`);
+    }
+}
+
+// Send notification form handler
+document.getElementById('sendNotificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('تم إرسال الإشعار بنجاح!');
+    bootstrap.Modal.getInstance(document.getElementById('sendNotificationModal')).hide();
+    this.reset();
+});
+
+// Select all checkbox handler
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.notification-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+});
+</script>

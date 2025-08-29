@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الأدمن - MyBus</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="mask-icon" href="favicon.svg" color="#3498db">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js" onerror="handleFirebaseLoadError()"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js" onerror="handleFirebaseLoadError()"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js" onerror="handleFirebaseLoadError()"></script>
+
+    <script>
+        function handleFirebaseLoadError() {
+            console.error('❌ Failed to load Firebase scripts');
+            document.getElementById('loadingScreen').innerHTML = `
+                <div class="loading-content">
+                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3 text-white">خطأ في تحميل Firebase</h4>
+                    <p class="text-white">تحقق من اتصال الإنترنت وأعد تحميل الصفحة</p>
+                    <button class="btn btn-light mt-3" onclick="location.reload()">
+                        <i class="fas fa-refresh me-2"></i>إعادة تحميل
+                    </button>
+                </div>
+            `;
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/complaints.css">
+    <link rel="stylesheet" href="css/buses.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">جاري التحميل...</span>
+            </div>
+            <h4 class="mt-3">جاري تحميل لوحة التحكم...</h4>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen d-none">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="login-card">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-bus text-primary" style="font-size: 3rem;"></i>
+                            <h2 class="mt-3">لوحة تحكم الأدمن</h2>
+                            <p class="text-muted">MyBus Admin Dashboard</p>
+                        </div>
+                        
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">كلمة المرور</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                تسجيل الدخول
+                            </button>
+                        </form>
+                        
+                        <div id="loginError" class="alert alert-danger mt-3 d-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="d-none">
+        <!-- Sidebar Overlay -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar active">
+            <!-- Header -->
+            <div class="sidebar-header">
+                <h3>
+                    <i class="fas fa-bus me-2"></i>
+                    نظام إدارة الباصات
+                </h3>
+            </div>
+
+            <!-- Navigation Menu -->
+            <ul class="sidebar-nav">
+                <li class="nav-item active">
+                    <a href="#" class="nav-link" data-page="dashboard" onclick="navigateToPage('dashboard'); return false;">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>لوحة التحكم</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="students" onclick="navigateToPage('students'); return false;">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>إدارة الطلاب</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="parents" onclick="navigateToPage('parents'); return false;">
+                        <i class="fas fa-users"></i>
+                        <span>إدارة أولياء الأمور</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="supervisors" onclick="navigateToPage('supervisors'); return false;">
+                        <i class="fas fa-user-tie"></i>
+                        <span>إدارة المشرفين</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="buses" onclick="navigateToPage('buses'); return false;">
+                        <i class="fas fa-bus"></i>
+                        <span>إدارة السيارات</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="reports" onclick="navigateToPage('reports'); return false;">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>التقارير</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="complaints" onclick="navigateToPage('complaints'); return false;">
+                        <i class="fas fa-comments"></i>
+                        <span>إدارة الشكاوى</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+                <div class="container-fluid">
+                    <!-- Sidebar Toggle Button -->
+                    <button type="button" id="sidebarCollapse" class="btn btn-outline-primary d-xl-none me-2">
+                        <i class="fas fa-bars"></i>
+                        <span class="d-none d-md-inline ms-1">القائمة</span>
+                    </button>
+
+                    <!-- Mobile brand -->
+                    <a class="navbar-brand d-xl-none" href="#" onclick="loadPage('dashboard')">
+                        <div class="brand-container">
+                            <div class="brand-icon">
+                                <i class="fas fa-bus"></i>
+                            </div>
+                            <div class="brand-text">
+                                <span class="brand-name d-none d-sm-inline">MyBus Admin</span>
+                                <span class="brand-name d-sm-none">MyBus</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Desktop brand -->
+                    <a class="navbar-brand d-none d-xl-block" href="#" onclick="loadPage('dashboard')">
+                        <div class="brand-container">
+                            <div class="brand-icon">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <div class="brand-text">
+                                <span class="brand-name">لوحة التحكم</span>
+                                <span class="brand-subtitle">MyBus Admin Panel</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Right side items -->
+                    <div class="navbar-nav ms-auto">
+                        <!-- Connection Status -->
+                        <div class="nav-item me-3">
+                            <span id="connectionStatus" class="badge bg-success">
+                                <i class="fas fa-wifi me-1"></i>
+                                <span class="d-none d-lg-inline">متصل</span>
+                            </span>
+                        </div>
+
+                        <!-- Settings Quick Access (Large screens only) -->
+                        <div class="nav-item me-3 d-none d-lg-block">
+                            <button class="btn btn-outline-secondary" onclick="openSettings()" title="الإعدادات">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+
+                        <!-- Notifications -->
+                        <div class="nav-item me-3 d-none d-md-block">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary position-relative"
+                                        id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                        title="الإشعارات">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                          id="navNotificationBadge" style="display: none;">
+                                        0
+                                        <span class="visually-hidden">إشعارات جديدة</span>
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end notifications-dropdown" style="width: 350px; max-height: 400px; overflow-y: auto;">
+                                    <li class="dropdown-header d-flex justify-content-between align-items-center">
+                                        <span>الإشعارات</span>
+                                        <div>
+                                            <button class="btn btn-sm btn-link text-primary p-0 me-2" onclick="markAllNotificationsAsRead()" title="تحديد الكل كمقروء">
+                                                <i class="fas fa-check-double"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-link text-secondary p-0" onclick="openNotifications()" title="عرض جميع الإشعارات">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </button>
+                                        </div>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <div id="notificationsDropdownContent">
+                                        <li class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">جاري التحميل...</span>
+                                            </div>
+                                            <p class="mt-2 mb-0 text-muted small">جاري تحميل الإشعارات...</p>
+                                        </li>
+                                    </div>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="text-center">
+                                        <button class="btn btn-sm btn-primary" onclick="openNotifications()">
+                                            عرض جميع الإشعارات
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- User Dropdown -->
+                        <div class="nav-item dropdown">
+                            <button class="dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar">
+                                    <span id="adminInitials">A</span>
+                                </div>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <!-- Admin Info Header -->
+                                <li class="dropdown-header">
+                                    <div class="admin-info">
+                                        <div class="admin-avatar">
+                                            <span id="adminInitialsHeader">A</span>
+                                        </div>
+                                        <div class="admin-details">
+                                            <h6 id="adminNameHeader">مدير النظام</h6>
+                                            <small id="adminEmailHeader">admin@mybus.com</small>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <!-- Menu Items -->
+                                <li>
+                                    <button class="dropdown-item" onclick="openProfile()">
+                                        <i class="fas fa-user"></i>
+                                        <span>الملف الشخصي</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" onclick="openSettings()">
+                                        <i class="fas fa-cog"></i>
+                                        <span>الإعدادات</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" onclick="openNotifications()">
+                                        <i class="fas fa-bell"></i>
+                                        <span>الإشعارات</span>
+                                        <span class="badge bg-danger ms-auto" id="notificationCount">3</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" onclick="openHelp()">
+                                        <i class="fas fa-question-circle"></i>
+                                        <span>المساعدة</span>
+                                    </button>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+
+                                <!-- Logout -->
+                                <li>
+                                    <button class="dropdown-item text-danger" onclick="handleLogout()">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>تسجيل الخروج</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Emergency Reset Button -->
+            <button class="emergency-reset" onclick="emergencyReset()" title="إعادة تعيين الطوارئ (Ctrl+Shift+R)">
+                <i class="fas fa-redo"></i> إعادة تعيين
+            </button>
+
+            <!-- Backdrop Destroyer Button -->
+            <button class="backdrop-destroyer" onclick="destroyAllBackdrops()" title="تدمير جميع الخلفيات">
+                <i class="fas fa-times"></i> إزالة الخلفية
+            </button>
+
+            <!-- Main Content Area -->
+            <div class="container-fluid mt-4">
+                <div id="pageContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Bus Modal -->
+    <div class="modal fade" id="addBusModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="busModalTitle">إضافة سيارة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addBusForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="busId">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="plateNumber" class="form-label">رقم اللوحة *</label>
+                                <input type="text" class="form-control" id="plateNumber" name="plateNumber" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="capacity" class="form-label">سعة السيارة *</label>
+                                <input type="number" class="form-control" id="capacity" name="capacity"
+                                       min="10" max="50" value="30" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">وصف السيارة *</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      rows="2" required placeholder="مثال: باص مدرسي حديث"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="driverName" class="form-label">اسم السائق *</label>
+                                <input type="text" class="form-control" id="driverName" name="driverName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="driverPhone" class="form-label">رقم هاتف السائق *</label>
+                                <input type="tel" class="form-control" id="driverPhone" name="driverPhone" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="route" class="form-label">خط السير *</label>
+                            <input type="text" class="form-control" id="route" name="route"
+                                   required placeholder="مثال: المعادي - المدرسة">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="hasAirConditioning"
+                                       name="hasAirConditioning">
+                                <label class="form-check-label" for="hasAirConditioning">
+                                    <i class="fas fa-snowflake text-info me-2"></i>
+                                    السيارة مكيفة
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save me-2"></i>
+                            حفظ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JS -->
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+    <script src="js/complaints.js"></script>
+
+    <!-- Initialize app when DOM is loaded -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, starting initialization...');
+
+            // Force show login after 3 seconds if still loading
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                const loginScreen = document.getElementById('loginScreen');
+
+                if (loadingScreen && !loadingScreen.classList.contains('d-none')) {
+                    console.log('⚠️ Loading timeout, forcing login screen...');
+                    loadingScreen.classList.add('d-none');
+                    loginScreen.classList.remove('d-none');
+                }
+            }, 3000);
+
+            // Wait for Firebase to load completely
+            const checkFirebaseAndInit = () => {
+                console.log('🔍 Checking Firebase availability...');
+
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                    console.log('✅ Firebase loaded successfully');
+
+                    // Wait a bit more for app.js to load
+                    setTimeout(() => {
+                        if (typeof initializeApp === 'function') {
+                            console.log('✅ initializeApp function found, calling...');
+                            initializeApp();
+                        } else {
+                            console.error('❌ initializeApp function not found, forcing login...');
+                            // Force show login
+                            document.getElementById('loadingScreen').classList.add('d-none');
+                            document.getElementById('loginScreen').classList.remove('d-none');
+                        }
+                    }, 100);
+                } else {
+                    console.log('⏳ Firebase not ready yet, retrying...');
+                    setTimeout(checkFirebaseAndInit, 200);
+                }
+            };
+
+            // Start checking immediately
+            checkFirebaseAndInit();
+        });
+    </script>
+</body>
+</html>

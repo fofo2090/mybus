@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@color/notification_color">
+
+    <!-- أيقونة باص بسيطة للإشعارات -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M4,16c0,0.88 0.39,1.67 1,2.22V20c0,0.55 0.45,1 1,1h1c0.55,0 1,-0.45 1,-1v-1h8v1c0,0.55 0.45,1 1,1h1c0.55,0 1,-0.45 1,-1v-1.78c0.61,-0.55 1,-1.34 1,-2.22V6c0,-3.5 -3.58,-4 -8,-4s-8,0.5 -8,4V16z"/>
+
+    <!-- عجلات الباص -->
+    <path
+        android:fillColor="@android:color/black"
+        android:pathData="M6.5,14A1.5,1.5 0 0,0 5,15.5A1.5,1.5 0 0,0 6.5,17A1.5,1.5 0 0,0 8,15.5A1.5,1.5 0 0,0 6.5,14M17.5,14A1.5,1.5 0 0,0 16,15.5A1.5,1.5 0 0,0 17.5,17A1.5,1.5 0 0,0 19,15.5A1.5,1.5 0 0,0 17.5,14Z"/>
+
+    <!-- نوافذ الباص -->
+    <path
+        android:fillColor="@android:color/black"
+        android:pathData="M6,6h4v3H6V6z"/>
+    <path
+        android:fillColor="@android:color/black"
+        android:pathData="M14,6h4v3h-4V6z"/>
+</vector>

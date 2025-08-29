@@ -1,0 +1,365 @@
+<!-- Complaints Management Page -->
+<div class="complaints-page">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-comments text-primary me-2"></i>
+                إدارة الشكاوى
+            </h1>
+            <p class="text-muted mb-0">إدارة ومتابعة شكاوى أولياء الأمور</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshComplaints()">
+                <i class="fas fa-sync-alt me-2"></i>
+                تحديث
+            </button>
+            <button class="btn btn-primary" onclick="exportComplaints()">
+                <i class="fas fa-download me-2"></i>
+                تصدير
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-inbox text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title mb-1">إجمالي الشكاوى</h6>
+                            <h3 class="mb-0" id="totalComplaints">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-clock text-warning fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title mb-1">في انتظار المراجعة</h6>
+                            <h3 class="mb-0" id="pendingComplaints">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-cog text-info fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title mb-1">قيد المعالجة</h6>
+                            <h3 class="mb-0" id="inProgressComplaints">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-check-circle text-success fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="card-title mb-1">تم الحل</h6>
+                            <h3 class="mb-0" id="resolvedComplaints">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">البحث</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchInput" 
+                               placeholder="البحث في الشكاوى..." onkeyup="filterComplaints()">
+                    </div>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">الحالة</label>
+                    <select class="form-select" id="statusFilter" onchange="filterComplaints()">
+                        <option value="">جميع الحالات</option>
+                        <option value="pending">في انتظار المراجعة</option>
+                        <option value="inProgress">قيد المعالجة</option>
+                        <option value="resolved">تم الحل</option>
+                        <option value="closed">مغلقة</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">الأولوية</label>
+                    <select class="form-select" id="priorityFilter" onchange="filterComplaints()">
+                        <option value="">جميع الأولويات</option>
+                        <option value="urgent">عاجلة</option>
+                        <option value="high">عالية</option>
+                        <option value="medium">متوسطة</option>
+                        <option value="low">منخفضة</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">النوع</label>
+                    <select class="form-select" id="typeFilter" onchange="filterComplaints()">
+                        <option value="">جميع الأنواع</option>
+                        <option value="busService">خدمة الباص</option>
+                        <option value="driverBehavior">سلوك السائق</option>
+                        <option value="safety">السلامة</option>
+                        <option value="timing">التوقيت</option>
+                        <option value="communication">التواصل</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">التاريخ</label>
+                    <div class="input-group">
+                        <input type="date" class="form-control" id="dateFromFilter" onchange="filterComplaints()">
+                        <span class="input-group-text">إلى</span>
+                        <input type="date" class="form-control" id="dateToFilter" onchange="filterComplaints()">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                        <i class="fas fa-times me-1"></i>
+                        مسح الفلاتر
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaints Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">قائمة الشكاوى</h5>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-light text-dark" id="complaintsCount">0 شكوى</span>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                data-bs-toggle="dropdown">
+                            <i class="fas fa-sort me-1"></i>
+                            ترتيب
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="sortComplaints('date', 'desc')">
+                                الأحدث أولاً</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortComplaints('date', 'asc')">
+                                الأقدم أولاً</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortComplaints('priority', 'desc')">
+                                الأولوية العالية</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortComplaints('status', 'asc')">
+                                حسب الحالة</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <!-- Loading State -->
+            <div id="complaintsLoading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+                <p class="mt-3 text-muted">جاري تحميل الشكاوى...</p>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="complaintsEmpty" class="text-center py-5 d-none">
+                <i class="fas fa-inbox text-muted" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-muted">لا توجد شكاوى</h5>
+                <p class="text-muted">لم يتم العثور على أي شكاوى تطابق المعايير المحددة</p>
+            </div>
+            
+            <!-- Error State -->
+            <div id="complaintsError" class="text-center py-5 d-none">
+                <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-danger">خطأ في تحميل الشكاوى</h5>
+                <p class="text-muted" id="complaintsErrorMessage">حدث خطأ أثناء تحميل البيانات</p>
+                <button class="btn btn-primary" onclick="loadComplaints()">
+                    <i class="fas fa-retry me-2"></i>
+                    إعادة المحاولة
+                </button>
+            </div>
+            
+            <!-- Complaints Table -->
+            <div id="complaintsTable" class="table-responsive d-none">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="20%">العنوان</th>
+                            <th width="15%">ولي الأمر</th>
+                            <th width="10%">النوع</th>
+                            <th width="10%">الأولوية</th>
+                            <th width="10%">الحالة</th>
+                            <th width="15%">التاريخ</th>
+                            <th width="15%">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsTableBody">
+                        <!-- Complaints will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="صفحات الشكاوى" class="mt-4 d-none" id="complaintsPagination">
+        <ul class="pagination justify-content-center">
+            <!-- Pagination will be generated here -->
+        </ul>
+    </nav>
+</div>
+
+<!-- Complaint Details Modal -->
+<div class="modal fade" id="complaintDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تفاصيل الشكوى</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="complaintDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                <button type="button" class="btn btn-primary" id="editComplaintBtn" onclick="editComplaint()">
+                    <i class="fas fa-edit me-2"></i>
+                    تعديل
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Response Modal -->
+<div class="modal fade" id="addResponseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة رد على الشكوى</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addResponseForm">
+                <div class="modal-body">
+                    <input type="hidden" id="responseComplaintId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">عنوان الشكوى</label>
+                        <input type="text" class="form-control" id="responseComplaintTitle" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="adminResponse" class="form-label">رد الإدارة *</label>
+                        <textarea class="form-control" id="adminResponse" rows="4" 
+                                  placeholder="اكتب رد الإدارة على الشكوى..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="newStatus" class="form-label">تحديث الحالة</label>
+                        <select class="form-select" id="newStatus">
+                            <option value="inProgress">قيد المعالجة</option>
+                            <option value="resolved">تم الحل</option>
+                            <option value="closed">مغلقة</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        إرسال الرد
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تحديث حالة الشكوى</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="updateStatusForm">
+                <div class="modal-body">
+                    <input type="hidden" id="statusComplaintId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">عنوان الشكوى</label>
+                        <input type="text" class="form-control" id="statusComplaintTitle" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="complaintStatus" class="form-label">الحالة الجديدة *</label>
+                        <select class="form-select" id="complaintStatus" required>
+                            <option value="pending">في انتظار المراجعة</option>
+                            <option value="inProgress">قيد المعالجة</option>
+                            <option value="resolved">تم الحل</option>
+                            <option value="closed">مغلقة</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="statusNote" class="form-label">ملاحظة (اختياري)</label>
+                        <textarea class="form-control" id="statusNote" rows="3" 
+                                  placeholder="أضف ملاحظة حول تغيير الحالة..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        تحديث الحالة
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

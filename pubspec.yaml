@@ -1,0 +1,110 @@
+name: kidsbus
+description: "كيدز باص - تطبيق تتبع الطلاب في الباص المدرسي - Kids Bus Student Tracking App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.29.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+
+
+  # 🔥 Firebase - إصدارات متوافقة مع Flutter 3.29.3
+  firebase_core: ^3.15.1
+  firebase_auth: ^5.6.2
+  cloud_firestore: ^5.6.11
+  firebase_messaging: ^15.2.9
+  firebase_storage: ^12.4.9
+
+  # 🔔 Notifications
+  flutter_local_notifications: ^17.2.2
+
+  # 📱 QR Code & Scanning
+  mobile_scanner: ^7.0.1
+  qr_flutter: ^4.1.0
+
+  # 🎯 State Management
+  provider: ^6.1.2
+
+  # 🧭 Navigation
+  go_router: ^16.0.0
+
+  # 🎨 UI Components
+  cached_network_image: ^3.4.1
+
+  # 🛠️ Utilities
+  shared_preferences: ^2.2.2
+  intl: ^0.20.2
+  uuid: ^4.2.1
+  permission_handler: ^12.0.1
+  image_picker: ^1.0.7
+  image: ^4.1.7
+  url_launcher: ^6.3.1
+  fl_chart: ^1.0.0
+  path_provider: ^2.1.1
+
+  # 📊 Excel & File Handling
+  file_picker: ^8.1.2
+  excel: ^4.0.6
+
+  # 🌐 HTTP Requests
+  http: ^1.1.0
+
+  # 🔐 Security & File Handling
+  crypto: ^3.0.3
+  cross_file: ^0.3.3+8
+
+  # 🗺️ Location & Maps
+  google_maps_flutter: ^2.6.1
+  location: ^6.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/icons/app_icon.png
+
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
+
+# Platform-specific configurations
+platforms:
+  windows:
+    # Exclude plugins that don't support Windows
+    exclude:
+      - mobile_scanner
+      - permission_handler
+      - file_picker
+
+# إعدادات أيقونة التطبيق
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    background_color: "#1E88E5"
+    theme_color: "#1E88E5"
+  windows:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icons/app_icon.png"

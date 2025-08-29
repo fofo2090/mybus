@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الطلاب المضافين من أولياء الأمور</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/parent-students.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-users text-primary me-2"></i>
+                            الطلاب المضافين من أولياء الأمور
+                        </h2>
+                        <p class="text-muted mb-0">إدارة ومراجعة الطلاب المضافين من تطبيق أولياء الأمور</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary me-2" id="importExcelBtn">
+                            <i class="fas fa-file-excel me-2"></i>
+                            استيراد من Excel
+                        </button>
+                        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display: none;">
+                        <button class="btn btn-success" onclick="refreshParentStudents()">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            تحديث البيانات
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" id="totalParentStudents">0</h4>
+                                <p class="mb-0">إجمالي الطلاب</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-graduation-cap fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" id="approvedStudents">0</h4>
+                                <p class="mb-0">طلاب معتمدين</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" id="pendingStudents">0</h4>
+                                <p class="mb-0">في انتظار المراجعة</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" id="activeParents">0</h4>
+                                <p class="mb-0">أولياء أمور نشطين</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-user-friends fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">البحث</label>
+                                <input type="text" class="form-control" id="searchInput" placeholder="ابحث عن طالب أو ولي أمر...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">الصف</label>
+                                <select class="form-select" id="gradeFilter">
+                                    <option value="">جميع الصفوف</option>
+                                    <option value="الروضة">الروضة</option>
+                                    <option value="التمهيدي">التمهيدي</option>
+                                    <option value="الأول الابتدائي">الأول الابتدائي</option>
+                                    <option value="الثاني الابتدائي">الثاني الابتدائي</option>
+                                    <option value="الثالث الابتدائي">الثالث الابتدائي</option>
+                                    <option value="الرابع الابتدائي">الرابع الابتدائي</option>
+                                    <option value="الخامس الابتدائي">الخامس الابتدائي</option>
+                                    <option value="السادس الابتدائي">السادس الابتدائي</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">جميع الحالات</option>
+                                    <option value="approved">معتمد</option>
+                                    <option value="pending">في انتظار المراجعة</option>
+                                    <option value="rejected">مرفوض</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">خط السير</label>
+                                <select class="form-select" id="routeFilter">
+                                    <option value="">جميع الخطوط</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            قائمة الطلاب
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>الصورة</th>
+                                        <th>اسم الطالب</th>
+                                        <th>ولي الأمر</th>
+                                        <th>الصف</th>
+                                        <th>المدرسة</th>
+                                        <th>خط السير</th>
+                                        <th>تاريخ الإضافة</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parentStudentsTableBody">
+                                    <!-- Students will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">جاري التحميل...</span>
+                            </div>
+                            <p class="mt-2 text-muted">جاري تحميل بيانات الطلاب...</p>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="emptyState" class="text-center py-5" style="display: none;">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">لا توجد بيانات طلاب</h5>
+                            <p class="text-muted">لم يتم إضافة أي طلاب من أولياء الأمور بعد</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Details Modal -->
+    <div class="modal fade" id="studentDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تفاصيل الطالب</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="studentDetailsContent">
+                    <!-- Student details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="button" class="btn btn-success" id="approveStudentBtn">اعتماد الطالب</button>
+                    <button type="button" class="btn btn-danger" id="rejectStudentBtn">رفض الطالب</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve Student Modal -->
+    <div class="modal fade" id="approveStudentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اعتماد الطالب</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من اعتماد هذا الطالب؟</p>
+                    <div class="mb-3">
+                        <label class="form-label">تعيين سيارة (اختياري)</label>
+                        <select class="form-select" id="assignBusSelect">
+                            <option value="">اختر سيارة...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-success" id="confirmApproveBtn">تأكيد الاعتماد</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+
+    <script src="../js/parent-students.js"></script>
+</body>
+</html>

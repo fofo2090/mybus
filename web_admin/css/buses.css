@@ -1,0 +1,340 @@
+/* Buses Management Styles */
+
+.bus-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bus-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+}
+
+.driver-info {
+    border-left: 4px solid #ffc107;
+}
+
+.capacity-info .progress {
+    border-radius: 10px;
+}
+
+.capacity-info .progress-bar {
+    border-radius: 10px;
+}
+
+.features {
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+/* Statistics Cards */
+.card.bg-warning,
+.card.bg-primary,
+.card.bg-info,
+.card.bg-success {
+    transition: all 0.3s ease;
+}
+
+.card.bg-warning:hover,
+.card.bg-primary:hover,
+.card.bg-info:hover,
+.card.bg-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Filter Section */
+.card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+}
+
+/* Buttons */
+.btn-outline-secondary:hover,
+.btn-outline-primary:hover,
+.btn-outline-info:hover,
+.btn-outline-success:hover {
+    transform: translateY(-1px);
+}
+
+/* Modal Enhancements */
+.modal-header.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%) !important;
+}
+
+.modal-body .table td {
+    padding: 0.5rem;
+    border: none;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.modal-body .table td:first-child {
+    font-weight: 600;
+    color: #495057;
+    width: 40%;
+}
+
+/* Empty State */
+.text-center.py-5 {
+    padding: 3rem 1rem !important;
+}
+
+.text-center.py-5 i {
+    opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .bus-card {
+        margin-bottom: 1rem;
+    }
+    
+    .driver-info .row .col-8,
+    .driver-info .row .col-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .features .row .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .modal-body .row .col-md-6 {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header h6 {
+        font-size: 0.9rem;
+    }
+    
+    .card-header small {
+        font-size: 0.75rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.375rem;
+        font-size: 0.75rem;
+    }
+    
+    .d-flex.gap-2 {
+        gap: 0.5rem !important;
+    }
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bus-card {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Progress bar animations */
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Hover effects for clickable elements */
+.bus-card .btn:hover {
+    transform: translateY(-1px);
+}
+
+.dropdown-item:hover {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* Phone link styling */
+a[href^="tel:"] {
+    color: #198754;
+    font-weight: 600;
+}
+
+a[href^="tel:"]:hover {
+    color: #146c43;
+    text-decoration: underline;
+}
+
+/* Badge styling */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+}
+
+/* Statistics cards hover effects */
+.card.bg-warning .opacity-75 {
+    transition: opacity 0.3s ease;
+}
+
+.card.bg-warning:hover .opacity-75 {
+    opacity: 1 !important;
+}
+
+/* Loading states */
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Custom scrollbar for modals */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Filter section enhancements */
+.card .card-header h6 {
+    color: #495057;
+    font-weight: 600;
+}
+
+.row.g-3 > * {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+}
+
+/* Button group styling */
+.d-flex.gap-2 .btn {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Table styling in modals */
+.modal-body .table {
+    margin-bottom: 1rem;
+}
+
+.modal-body .table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status indicators */
+.badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* Capacity progress styling */
+.capacity-info {
+    background: rgba(13, 110, 253, 0.05);
+    border-radius: 8px;
+    padding: 0.75rem;
+    border-left: 4px solid #0d6efd;
+}
+
+.progress-bar.bg-success {
+    background-color: #198754 !important;
+}
+
+.progress-bar.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.progress-bar.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* Footer button styling */
+.bus-card .card-body .d-flex:last-child .btn {
+    border-radius: 50%;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dropdown menu styling */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item i {
+    width: 1.25rem;
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.alert .btn-close {
+    padding: 0.75rem;
+}
