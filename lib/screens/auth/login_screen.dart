@@ -25,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -42,6 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final UserModel? user = await authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        rememberMe: _rememberMe,
       );
 
       if (user != null && mounted) {
@@ -186,7 +188,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 
-                const SizedBox(height: 30),
+                const SizedBox(height: 10),
+
+                // Remember Me Checkbox
+                CheckboxListTile(
+                  title: const Text(
+                    'تذكرني',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value: _rememberMe,
+                  onChanged: (newValue) {
+                    setState(() {
+                      _rememberMe = newValue!;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.white,
+                  checkColor: Theme.of(context).primaryColor,
+                  tileColor: Colors.transparent,
+                  contentPadding: EdgeInsets.zero,
+                ),
+
+                const SizedBox(height: 20),
                 
                 // Login Button
                 UIHelper.buildActionButton(

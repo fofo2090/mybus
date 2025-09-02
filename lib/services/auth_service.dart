@@ -75,11 +75,20 @@ class AuthService extends ChangeNotifier {
   Future<void> _checkSavedLogin() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final rememberMe = prefs.getBool('remember_me') ?? false;
+
+      if (!rememberMe) {
+        if (currentUser != null) {
+          await signOut();
+        }
+        return;
+      }
+
       final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
       final savedEmail = prefs.getString('user_email');
       final savedUserId = prefs.getString('user_id');
       
-      debugPrint('🔍 Checking saved login: isLoggedIn=$isLoggedIn, email=$savedEmail');
+      debugPrint('🔍 Checking saved login: isLoggedIn=$isLoggedIn, email=$savedEmail, rememberMe=$rememberMe');
       
       if (isLoggedIn && savedEmail != null && savedUserId != null) {
         // التحقق من أن المستخدم ما زال مسجل دخوله في Firebase
@@ -91,6 +100,11 @@ class AuthService extends ChangeNotifier {
           debugPrint('⚠️ Saved login found but Firebase user not authenticated');
           await _clearLoginInfo();
         }
+      } else if (rememberMe) {
+        // This case should ideally not happen if everything is consistent,
+        // but as a safeguard, if rememberMe is true but other details are missing,
+        // we should probably clear everything to force a manual login.
+        await _clearLoginInfo();
       }
     } catch (e) {
       debugPrint('❌ Error checking saved login: $e');
@@ -120,8 +134,9 @@ class AuthService extends ChangeNotifier {
       await prefs.remove('user_email');
       await prefs.remove('user_id');
       await prefs.remove('login_timestamp');
+      await prefs.remove('remember_me');
       
-      debugPrint('✅ Login info cleared');
+      debugPrint('✅ All login info cleared');
     } catch (e) {
       debugPrint('❌ Error clearing login info: $e');
     }
@@ -153,6 +168,7 @@ class AuthService extends ChangeNotifier {
   Future<UserModel?> signInWithEmailAndPassword({
     required String email,
     required String password,
+    required bool rememberMe,
   }) async {
     try {
       _setLoading(true);
@@ -186,6 +202,10 @@ class AuthService extends ChangeNotifier {
       }
 
       if (result.user != null) {
+        // Save the rememberMe choice
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('remember_me', rememberMe);
+
         debugPrint('✅ تم تسجيل الدخول بنجاح، جلب بيانات المستخدم...');
 
         // انتظار قصير للتأكد من تحديث حالة المصادقة
@@ -344,8 +364,8 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Sign out with option to keep login data
-  Future<void> signOut({bool forceLogout = false}) async {
+  // Sign out
+  Future<void> signOut() async {
     try {
       _setLoading(true);
 
@@ -356,16 +376,8 @@ class AuthService extends ChangeNotifier {
       _currentUserData = null;
       _setError(null);
       
-      // مسح معلومات تسجيل الدخول فقط إذا كان تسجيل خروج إجباري
-      if (forceLogout) {
-        await _clearLoginInfo();
-        debugPrint('✅ Forced logout - all login data cleared');
-      } else {
-        // الحفاظ على بعض البيانات للدخول السريع
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('is_logged_in', false);
-        debugPrint('✅ Soft logout - keeping some data for quick login');
-      }
+      // Always clear all login info on sign out
+      await _clearLoginInfo();
       
       notifyListeners();
     } catch (e) {

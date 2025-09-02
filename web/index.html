@@ -55,6 +55,17 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/firebase-messaging-sw.js').then(function (registration) {
+          console.log('Service worker registered with scope: ', registration.scope);
+        }, function (err) {
+          console.log('Service worker registration failed: ', err);
+        });
+      });
+    }
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
