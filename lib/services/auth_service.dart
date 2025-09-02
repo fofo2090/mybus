@@ -54,18 +54,19 @@ class AuthService extends ChangeNotifier {
 
   // Initialize auth service
   void _init() {
-    // تحقق من وجود تسجيل دخول محفوظ عند بدء التطبيق
+    // Check for a saved login once at startup.
     _checkSavedLogin();
-    
+
+    // The listener should only react to user state changes *after* the initial check.
     _auth.authStateChanges().listen((User? user) async {
       if (user != null) {
+        // If user is not null, it means they are signed in.
+        // We might have already loaded data in _checkSavedLogin, but this ensures consistency.
         await _loadUserData(user.uid);
-        // حفظ معلومات تسجيل الدخول
-        await _saveLoginInfo(user);
       } else {
+        // If user is null, it means they have signed out.
+        // We just clear the in-memory data. The persistent data is handled by the explicit signOut() method.
         _currentUserData = null;
-        // مسح معلومات تسجيل الدخول المحفوظة
-        await _clearLoginInfo();
         notifyListeners();
       }
     });
@@ -84,13 +85,16 @@ class AuthService extends ChangeNotifier {
         return;
       }
       
-      // If the user should be remembered, check if we have the necessary data
-      if (rememberMe) {
+      // If the user should be remembered, and the firebase user exists, load data.
+      if (rememberMe && _auth.currentUser != null) {
           final savedUserId = prefs.getString('user_id');
-          // If we have a saved user and they are logged in, load their data.
-          if (savedUserId != null && _auth.currentUser?.uid == savedUserId) {
-              debugPrint('✅ User already logged in from saved session (RememberMe is active)');
-              await _loadUserData(savedUserId);
+          if (_auth.currentUser!.uid == savedUserId) {
+              debugPrint('✅ Restoring session for remembered user.');
+              await _loadUserData(_auth.currentUser!.uid);
+          } else {
+            // Mismatch between saved user and firebase user, clear everything to be safe.
+            await _clearLoginInfo();
+            await _auth.signOut();
           }
       }
     } catch (e) {
