@@ -30,13 +30,13 @@ class AuthService extends ChangeNotifier {
       final savedUserId = prefs.getString('user_id');
       final loginTimestamp = prefs.getInt('login_timestamp') ?? 0;
       
-      // التحقق من أن التسجيل ليس قديماً جداً (30 يوم)
-      final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+      // التحقق من أن التسجيل ليس قديماً جداً (60 يوم)
+      final sixtyDaysAgo = DateTime.now().subtract(const Duration(days: 60));
       final loginDate = DateTime.fromMillisecondsSinceEpoch(loginTimestamp);
       
       return isLoggedIn && 
              savedUserId != null && 
-             loginDate.isAfter(thirtyDaysAgo) &&
+             loginDate.isAfter(sixtyDaysAgo) &&
              _auth.currentUser?.uid == savedUserId;
     } catch (e) {
       debugPrint('❌ Error checking saved login: $e');

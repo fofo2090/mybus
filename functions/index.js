@@ -36,8 +36,6 @@ exports.sendPushNotification = functions.firestore
         notification: {
           title: title,
           body: body,
-          // The image must be a public URL. Replace this placeholder with your own hosted image.
-          imageUrl: 'https://i.imgur.com/KV2p9AL.png',
         },
         data: {
           ...notificationData,
@@ -48,12 +46,16 @@ exports.sendPushNotification = functions.firestore
             icon: 'ic_notification',
             color: '#1E88E5',
             sound: 'default',
-            channelId: 'mybus_notifications',
+            channelId: notificationData.channelId || 'mybus_notifications',
           },
         },
         apns: {
           payload: {
             aps: {
+              alert: {
+                title: title,
+                body: body,
+              },
               sound: 'default',
               badge: 1,
             },

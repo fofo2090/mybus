@@ -865,7 +865,7 @@ class _ParentsManagementScreenState extends State<ParentsManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('تأكيد الحذف'),
-        content: Text('هل أنت متأكد من حذف ولي الأمر "${parent.name}"؟'),
+        content: Text('هل أنت متأكد من حذف ولي الأمر "${parent.name}"؟ سيتم حذف جميع الطلاب المرتبطين به.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -873,7 +873,7 @@ class _ParentsManagementScreenState extends State<ParentsManagementScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              await _deleteParent(parent.id);
+              await _deleteParent(parent);
               if (context.mounted) Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
@@ -886,21 +886,46 @@ class _ParentsManagementScreenState extends State<ParentsManagementScreen> {
     );
   }
 
-  Future<void> _deleteParent(String id) async {
+  Future<void> _deleteParent(UserModel parent) async {
     try {
-      // حذف ولي الأمر من قاعدة البيانات
-      await _firestore.collection('users').doc(id).delete();
+      // 1. Get all students associated with the parent
+      final studentsSnapshot = await _firestore
+          .collection('students')
+          .where('parentId', isEqualTo: parent.id)
+          .get();
+
+      // Create a batch write to delete all associated data atomically
+      final batch = _firestore.batch();
+
+      // 2. Delete each associated student
+      for (final doc in studentsSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // 3. Delete the parent's profile from 'parent_profiles'
+      batch.delete(_firestore.collection('parent_profiles').doc(parent.id));
+
+      // 4. Delete the user from 'users' collection
+      batch.delete(_firestore.collection('users').doc(parent.id));
+
+      // Commit the batch
+      await batch.commit();
+
+      // 5. Optionally, delete the user from Firebase Auth
+      // This requires re-authentication and is a sensitive operation.
+      // For now, we are deleting the data, which revokes access.
+      // To fully delete, you would need a cloud function.
+      debugPrint('User ${parent.email} data deleted from Firestore. Auth record remains but is now orphaned.');
+
 
       if (mounted) {
-        // تحديث الواجهة
-        setState(() {});
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تم حذف ولي الأمر بنجاح'),
+            content: Text('تم حذف ولي الأمر وجميع بياناته بنجاح'),
             backgroundColor: Colors.green,
           ),
         );
+        setState(() {}); // Refresh the UI
       }
     } catch (e) {
       if (mounted) {
