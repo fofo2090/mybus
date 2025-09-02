@@ -77,34 +77,21 @@ class AuthService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final rememberMe = prefs.getBool('remember_me') ?? false;
 
-      if (!rememberMe) {
-        if (currentUser != null) {
-          await signOut();
-        }
+      // If the user should not be remembered, but the Firebase SDK has a cached user,
+      // sign them out of the SDK state for this session.
+      if (!rememberMe && _auth.currentUser != null) {
+        await _auth.signOut(); // Just sign out from Firebase, don't clear our prefs
         return;
       }
-
-      final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
-      final savedEmail = prefs.getString('user_email');
-      final savedUserId = prefs.getString('user_id');
       
-      debugPrint('🔍 Checking saved login: isLoggedIn=$isLoggedIn, email=$savedEmail, rememberMe=$rememberMe');
-      
-      if (isLoggedIn && savedEmail != null && savedUserId != null) {
-        // التحقق من أن المستخدم ما زال مسجل دخوله في Firebase
-        final currentUser = _auth.currentUser;
-        if (currentUser != null && currentUser.uid == savedUserId) {
-          debugPrint('✅ User already logged in from saved session');
-          await _loadUserData(currentUser.uid);
-        } else {
-          debugPrint('⚠️ Saved login found but Firebase user not authenticated');
-          await _clearLoginInfo();
-        }
-      } else if (rememberMe) {
-        // This case should ideally not happen if everything is consistent,
-        // but as a safeguard, if rememberMe is true but other details are missing,
-        // we should probably clear everything to force a manual login.
-        await _clearLoginInfo();
+      // If the user should be remembered, check if we have the necessary data
+      if (rememberMe) {
+          final savedUserId = prefs.getString('user_id');
+          // If we have a saved user and they are logged in, load their data.
+          if (savedUserId != null && _auth.currentUser?.uid == savedUserId) {
+              debugPrint('✅ User already logged in from saved session (RememberMe is active)');
+              await _loadUserData(savedUserId);
+          }
       }
     } catch (e) {
       debugPrint('❌ Error checking saved login: $e');
@@ -115,12 +102,11 @@ class AuthService extends ChangeNotifier {
   Future<void> _saveLoginInfo(User user) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_logged_in', true);
-      await prefs.setString('user_email', user.email ?? '');
+      // We only need to store the user_id to check against on next launch.
+      // The 'remember_me' flag is saved separately during the login process.
       await prefs.setString('user_id', user.uid);
-      await prefs.setInt('login_timestamp', DateTime.now().millisecondsSinceEpoch);
       
-      debugPrint('✅ Login info saved for user: ${user.email}');
+      debugPrint('✅ User ID saved for potential persistent session: ${user.uid}');
     } catch (e) {
       debugPrint('❌ Error saving login info: $e');
     }
@@ -130,13 +116,12 @@ class AuthService extends ChangeNotifier {
   Future<void> _clearLoginInfo() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('is_logged_in');
-      await prefs.remove('user_email');
+      // On a full sign out, we clear everything including the user's preference
+      // to be remembered.
       await prefs.remove('user_id');
-      await prefs.remove('login_timestamp');
       await prefs.remove('remember_me');
       
-      debugPrint('✅ All login info cleared');
+      debugPrint('✅ All persistent session info cleared');
     } catch (e) {
       debugPrint('❌ Error clearing login info: $e');
     }
