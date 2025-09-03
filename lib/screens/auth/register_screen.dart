@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../services/auth_service.dart';
+import '../../services/persistent_auth_service.dart';
 import '../../models/user_model.dart';
 import '../../utils/background_utils.dart';
 import '../../utils/responsive_helper.dart';
@@ -38,7 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authService = Provider.of<AuthService>(context, listen: false);
+    final authService = Provider.of<PersistentAuthService>(context, listen: false);
 
     try {
       final UserModel? user = await authService.registerWithEmailAndPassword(

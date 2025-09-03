@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../services/auth_service.dart';
+import '../../services/persistent_auth_service.dart';
 import '../../models/user_model.dart';
 import '../../main.dart';
 import '../../routes/app_routes.dart';
@@ -25,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _rememberMe = true;
 
   @override
   void dispose() {
@@ -36,12 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authService = Provider.of<AuthService>(context, listen: false);
+    final authService = Provider.of<PersistentAuthService>(context, listen: false);
 
     try {
       final UserModel? user = await authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        rememberMe: _rememberMe,
       );
 
       if (user != null && mounted) {
@@ -70,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: AnimatedBackground(
         showChildren: true, // نريد عناصر الأطفال في شاشة تسجيل الدخول
         child: SafeArea(
-          child: Consumer<AuthService>(
+          child: Consumer<PersistentAuthService>(
             builder: (context, authService, child) {
               return SingleChildScrollView(
                 padding: UIHelper.largePadding,
@@ -186,7 +188,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 
-                const SizedBox(height: 30),
+                const SizedBox(height: 10),
+
+                // Remember Me Checkbox
+                CheckboxListTile(
+                  title: const Text(
+                    'تذكرني',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value: _rememberMe,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _rememberMe = value!;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.white,
+                  checkColor: Theme.of(context).primaryColor,
+                  tileColor: Colors.transparent,
+                  contentPadding: EdgeInsets.zero,
+                ),
+
+                const SizedBox(height: 20),
                 
                 // Login Button
                 UIHelper.buildActionButton(

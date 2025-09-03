@@ -283,6 +283,58 @@ class PersistentAuthService extends ChangeNotifier {
     }
   }
 
+  /// تسجيل مستخدم جديد
+  Future<UserModel?> registerWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+    required UserType userType,
+  }) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+
+      final UserCredential result = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (result.user != null) {
+        final userModel = UserModel(
+          id: result.user!.uid,
+          email: email,
+          name: name,
+          phone: phone,
+          userType: userType,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        await _firestore
+            .collection('users')
+            .doc(result.user!.uid)
+            .set(userModel.toMap());
+
+        // بعد التسجيل، قم بتسجيل الدخول مباشرة لحفظ الجلسة
+        await signInWithEmailAndPassword(email: email, password: password, rememberMe: true);
+
+        return userModel;
+      }
+      return null;
+    } on FirebaseAuthException catch (e) {
+      final errorMessage = _handleAuthException(e);
+      _setError(errorMessage);
+      throw Exception(errorMessage);
+    } catch (e) {
+      final errorMessage = 'خطأ في إنشاء الحساب: $e';
+      _setError(errorMessage);
+      throw Exception(errorMessage);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// تسجيل الخروج (مع خيار الحفاظ على البيانات)
   Future<void> signOut({bool clearPersistedData = false}) async {
     try {
@@ -410,16 +462,24 @@ class PersistentAuthService extends ChangeNotifier {
         return 'لا يوجد مستخدم بهذا البريد الإلكتروني';
       case 'wrong-password':
         return 'كلمة المرور غير صحيحة';
+      case 'invalid-credential':
+        return 'بيانات الاعتماد غير صحيحة أو منتهية الصلاحية';
+      case 'email-already-in-use':
+        return 'البريد الإلكتروني مستخدم بالفعل';
+      case 'weak-password':
+        return 'كلمة المرور ضعيفة';
       case 'invalid-email':
         return 'البريد الإلكتروني غير صحيح';
       case 'user-disabled':
         return 'تم تعطيل هذا الحساب';
       case 'too-many-requests':
-        return 'تم تجاوز عدد المحاولات المسموح. حاول مرة أخرى لاحقاً';
+        return 'تم تجاوز عدد المحاولات المسموح، حاول لاحقاً';
       case 'network-request-failed':
-        return 'خطأ في الاتصال بالإنترنت';
+        return 'خطأ في الاتصال بالشبكة';
+      case 'operation-not-allowed':
+        return 'العملية غير مسموحة';
       default:
-        return 'حدث خطأ في تسجيل الدخول: ${e.message}';
+        return 'حدث خطأ في المصادقة: ${e.code}';
     }
   }
 }

@@ -78,7 +78,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // تسجيل جميع الخدمات كـ Providers
-        ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider.value(value: PersistentAuthService()),
         Provider(create: (_) => DatabaseService()),
         Provider(create: (_) => UnifiedNotificationService()),
