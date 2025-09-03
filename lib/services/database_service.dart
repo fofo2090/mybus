@@ -15,6 +15,9 @@ import '../models/supervisor_assignment_model.dart';
 import '../models/student_behavior_model.dart';
 import '../models/notification_model.dart';
 import '../models/supervisor_evaluation_model.dart';
+import '../models/admin_notification_model.dart';
+import '../models/parent_notification_model.dart';
+import '../models/supervisor_notification_model.dart';
 import '../models/parent_student_link_model.dart';
 import 'rate_limit_service.dart';
 import 'cache_service.dart';
@@ -647,18 +650,18 @@ class DatabaseService {
     try {
       // حذف فعلي من قاعدة البيانات
       await _firestore.collection('students').doc(studentId).delete();
-      
+
       // حذف أي روابط مع أولياء الأمور
       final linksQuery = await _firestore
           .collection('parentStudentLinks')
           .where('studentIds', arrayContains: studentId)
           .get();
-      
+
       for (var linkDoc in linksQuery.docs) {
         final linkData = linkDoc.data();
         final studentIds = List<String>.from(linkData['studentIds'] ?? []);
         studentIds.remove(studentId);
-        
+
         if (studentIds.isEmpty) {
           // إذا لم يعد هناك طلاب، احذف الرابط كاملاً
           await linkDoc.reference.delete();
@@ -667,7 +670,7 @@ class DatabaseService {
           await linkDoc.reference.update({'studentIds': studentIds});
         }
       }
-      
+
       debugPrint('✅ Student deleted completely from database: $studentId');
     } catch (e) {
       debugPrint('❌ Error deleting student: $e');
