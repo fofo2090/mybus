@@ -42,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final UserModel? user = await authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        rememberMe: true, // Always remember the user
       );
 
       if (user != null && mounted) {

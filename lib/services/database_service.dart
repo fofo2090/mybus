@@ -3743,4 +3743,299 @@ class DatabaseService {
     TripDirection? direction,
   }) async {
     try {
-      debugPrint('🔍 Looking for supervisor for parent: $parentId, d
+      debugPrint('🔍 Looking for supervisor for parent: $parentId, direction: $direction');
+      final students = await getStudentsByParentOnce(parentId);
+      if (students.isEmpty) {
+        debugPrint('⚠️ No students found for parent $parentId');
+        return null;
+      }
+
+      final student = students.first;
+      if (student.busId.isEmpty) {
+        debugPrint('⚠️ Student ${student.name} has no bus assigned.');
+        return null;
+      }
+
+      return getActiveSupervisorForBus(student.busId, direction: direction);
+    } catch (e) {
+      debugPrint('❌ Error in getSupervisorForParentStudent: $e');
+      return null;
+    }
+  }
+
+  //==================== IMPLEMENTED MISSING METHODS ====================
+
+  // Bus Methods
+  Future<BusModel?> getBusById(String busId) async {
+    return getBus(busId);
+  }
+
+  Stream<BusModel?> getBusStream(String busId) {
+    return _firestore.collection('buses').doc(busId).snapshots().map((snapshot) {
+      if (snapshot.exists) {
+        return BusModel.fromMap(snapshot.data()!);
+      }
+      return null;
+    });
+  }
+
+  // User Methods
+  Future<UserModel?> getUserById(String userId) async {
+    final userData = await getUserData(userId);
+    if (userData != null) {
+      if (!userData.containsKey('id')) {
+        userData['id'] = userId;
+      }
+      return UserModel.fromMap(userData);
+    }
+    return null;
+  }
+
+  // Student Methods
+  Stream<List<StudentModel>> getStudentsByRoute(String busRoute) {
+    return _firestore
+        .collection('students')
+        .where('busRoute', isEqualTo: busRoute)
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => StudentModel.fromMap(doc.data())).toList());
+  }
+
+  Future<List<StudentModel>> getStudentsByRouteSimple(String busRoute) async {
+    final snapshot = await _firestore
+        .collection('students')
+        .where('busRoute', isEqualTo: busRoute)
+        .where('isActive', isEqualTo: true)
+        .get();
+    return snapshot.docs.map((doc) => StudentModel.fromMap(doc.data())).toList();
+  }
+
+  Future<List<StudentModel>> getStudentsByBusIdSimple(String busId) async {
+    final snapshot = await _firestore
+        .collection('students')
+        .where('busId', isEqualTo: busId)
+        .where('isActive', isEqualTo: true)
+        .get();
+    return snapshot.docs.map((doc) => StudentModel.fromMap(doc.data())).toList();
+  }
+
+  Stream<List<StudentModel>> getAllStudentsWithAbsenceData() {
+    // This is a complex query. A basic implementation would be to get all students.
+    return getAllStudents();
+  }
+
+  // Notification Methods
+  Future<void> fixExistingNotifications() async {
+    debugPrint('🔧 fixExistingNotifications called. No action taken.');
+    return;
+  }
+
+  Stream<List<NotificationModel>> getAdminNotifications(String adminId) {
+    return _firestore
+        .collection('notifications')
+        .where('recipientId', isEqualTo: adminId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => NotificationModel.fromMap(doc.data())).toList());
+  }
+
+  Future<void> sendNotificationToParent(String parentId, String title, String body) async {
+    await NotificationService().sendNotificationToUser(
+      userId: parentId,
+      title: title,
+      body: body,
+      type: 'general',
+    );
+  }
+
+  Stream<List<NotificationModel>> getParentNotifications(String parentId) {
+    if (parentId.isEmpty) return Stream.value([]);
+    return _firestore
+        .collection('notifications')
+        .where('recipientId', isEqualTo: parentId)
+        .orderBy('timestamp', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        try {
+          return NotificationModel.fromMap(doc.data());
+        } catch (e) {
+          debugPrint('❌ Error parsing notification ${doc.id}: $e');
+          return null;
+        }
+      }).where((notification) => notification != null).cast<NotificationModel>().toList();
+    });
+  }
+
+  Future<void> markAllNotificationsAsRead(String userId) async {
+    try {
+      final batch = _firestore.batch();
+      final snapshot = await _firestore
+          .collection('notifications')
+          .where('recipientId', isEqualTo: userId)
+          .where('isRead', isEqualTo: false)
+          .get();
+
+      for (final doc in snapshot.docs) {
+        batch.update(doc.reference, {'isRead': true});
+      }
+      await batch.commit();
+    } catch (e) {
+      debugPrint('❌ Error marking all notifications as read: $e');
+    }
+  }
+
+  // Supervisor Assignment Methods
+  Future<SupervisorAssignmentModel?> getActiveSupervisorForBus(String busId, {TripDirection? direction}) async {
+    try {
+      var query = _firestore
+          .collection('supervisor_assignments')
+          .where('busId', isEqualTo: busId)
+          .where('status', isEqualTo: 'active');
+
+      final snapshot = await query.get();
+
+      if (snapshot.docs.isEmpty) return null;
+
+      if (direction != null) {
+        final assignments = snapshot.docs
+            .map((doc) => SupervisorAssignmentModel.fromMap(doc.data()))
+            .where((a) => a.direction == direction || a.direction == TripDirection.both)
+            .toList();
+        if (assignments.isNotEmpty) {
+          assignments.sort((a, b) => b.assignedAt.compareTo(a.assignedAt));
+          return assignments.first;
+        }
+        return null;
+      }
+
+      final assignments = snapshot.docs.map((doc) => SupervisorAssignmentModel.fromMap(doc.data())).toList();
+      assignments.sort((a, b) => b.assignedAt.compareTo(a.assignedAt));
+      return assignments.first;
+    } catch (e) {
+      debugPrint('❌ Error getting active supervisor for bus: $e');
+      return null;
+    }
+  }
+
+  Future<void> deactivateSupervisorAssignment(String assignmentId) async {
+    await _firestore.collection('supervisor_assignments').doc(assignmentId).update({'status': 'inactive'});
+  }
+
+  Future<void> deleteSupervisorAssignment(String assignmentId) async {
+    await _firestore.collection('supervisor_assignments').doc(assignmentId).delete();
+  }
+
+  Future<void> updateSupervisorAssignment(SupervisorAssignmentModel assignment) async {
+    await _firestore.collection('supervisor_assignments').doc(assignment.id).update(assignment.toMap());
+  }
+
+  // Survey and Evaluation Methods
+  Future<String> createSupervisorEvaluationSurvey({
+    required String supervisorId,
+    required String supervisorName,
+    required String parentId,
+    required String parentName,
+  }) async {
+    final surveyId = _uuid.v4();
+    final surveyData = {
+      'id': surveyId,
+      'supervisorId': supervisorId,
+      'supervisorName': supervisorName,
+      'parentId': parentId,
+      'parentName': parentName,
+      'createdAt': FieldValue.serverTimestamp(),
+      'status': 'pending',
+    };
+    await _firestore.collection('supervisor_evaluation_surveys').doc(surveyId).set(surveyData);
+    return surveyId;
+  }
+
+  Stream<List<SupervisorEvaluationModel>> getSupervisorEvaluationReports() {
+    return _firestore.collection('supervisor_evaluations').snapshots().map(
+          (snapshot) => snapshot.docs.map((doc) => SupervisorEvaluationModel.fromMap(doc.data())).toList(),
+        );
+  }
+
+  Future<List<StudentBehaviorEvaluation>> getBehaviorEvaluations(String studentId, int month, int year) async {
+    final snapshot = await _firestore
+        .collection('behavior_evaluations')
+        .where('studentId', isEqualTo: studentId)
+        .where('month', isEqualTo: month)
+        .where('year', isEqualTo: year)
+        .get();
+    return snapshot.docs.map((doc) => StudentBehaviorEvaluation.fromMap(doc.data())).toList();
+  }
+
+  Future<void> saveBehaviorEvaluation(StudentBehaviorEvaluation evaluation) async {
+    await _firestore.collection('behavior_evaluations').doc(evaluation.id).set(evaluation.toMap());
+  }
+
+  // Absence Methods
+  Future<List<AbsenceModel>> getTodayAbsencesForSupervisorSimple(String supervisorId) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final snapshot = await _firestore
+        .collection('absences')
+        .where('supervisorId', isEqualTo: supervisorId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(today))
+        .where('date', isLessThan: Timestamp.fromDate(tomorrow))
+        .get();
+    return snapshot.docs.map((doc) => AbsenceModel.fromMap(doc.data())).toList();
+  }
+
+  Future<List<AbsenceModel>> getAbsencesInDateRangeSimple(DateTime start, DateTime end) async {
+    final snapshot = await _firestore
+        .collection('absences')
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .get();
+    return snapshot.docs.map((doc) => AbsenceModel.fromMap(doc.data())).toList();
+  }
+
+  // Count Methods
+  Stream<int> getTotalUsersCount() => _firestore.collection('users').snapshots().map((s) => s.size);
+  Stream<int> getActiveStudentsCount() => _firestore.collection('students').where('isActive', isEqualTo: true).snapshots().map((s) => s.size);
+  Stream<int> getTotalParentsCount() => _firestore.collection('users').where('userType', isEqualTo: 'parent').snapshots().map((s) => s.size);
+  Stream<int> getTotalSupervisorsCount() => _firestore.collection('users').where('userType', isEqualTo: 'supervisor').snapshots().map((s) => s.size);
+  Stream<int> getTotalBusesCount() => _firestore.collection('buses').snapshots().map((s) => s.size);
+  Stream<int> getActiveTripCount() => _firestore.collection('trips').where('status', isEqualTo: 'active').snapshots().map((s) => s.size);
+  Stream<int> getAssignedStudentsCount() => _firestore.collection('students').where('busId', isNotEqualTo: '').snapshots().map((s) => s.size);
+
+  Stream<int> getTodayTripsCount() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    return _firestore
+        .collection('trips')
+        .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(today))
+        .where('timestamp', isLessThan: Timestamp.fromDate(tomorrow))
+        .snapshots()
+        .map((snapshot) => snapshot.size);
+  }
+
+  Future<bool> hasUserRespondedToSurvey(String surveyId, String userId) async {
+    final snapshot = await _firestore
+        .collection('survey_responses')
+        .where('surveyId', isEqualTo: surveyId)
+        .where('respondentId', isEqualTo: userId)
+        .limit(1)
+        .get();
+    return snapshot.docs.isNotEmpty;
+  }
+
+  Stream<List<SurveyModel>> getActiveSurveysForUser(String userType) {
+    return _firestore
+        .collection('surveys')
+        .where('status', isEqualTo: 'active')
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => SurveyModel.fromMap(doc.data()))
+              .where((survey) => survey.targetAudience.contains(userType) || survey.targetAudience.contains('all'))
+              .toList();
+        });
+  }
+}

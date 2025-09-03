@@ -13,7 +13,6 @@ import 'services/notification_dialog_service.dart';
 import 'services/fcm_service.dart';
 import 'services/fcm_background_handler.dart';
 import 'services/theme_service.dart';
-import 'services/persistent_auth_service.dart';
 import 'services/enhanced_push_notification_service.dart';
 import 'services/enhanced_background_handler.dart';
 import 'utils/app_constants.dart';
@@ -79,7 +78,6 @@ class MyApp extends StatelessWidget {
       providers: [
         // تسجيل جميع الخدمات كـ Providers
         ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider.value(value: PersistentAuthService()),
         Provider(create: (_) => DatabaseService()),
         Provider(create: (_) => UnifiedNotificationService()),
         Provider(create: (_) => EnhancedPushNotificationService()),

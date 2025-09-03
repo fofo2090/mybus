@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../screens/admin/system_settings_screen.dart';
@@ -477,7 +478,8 @@ class _AdminShellState extends State<AdminShell>
 
   Future<void> _logout() async {
     try {
-      await AuthService().signOut();
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.signOut(clearPersistedData: true); // Admin logout should clear session
       if (mounted) {
         context.go('/login');
       }

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
-import '../../services/persistent_auth_service.dart';
+import '../../services/auth_service.dart';
 import '../../services/database_service.dart';
 import '../../services/theme_service.dart';
 import '../../utils/background_utils.dart';
@@ -32,7 +32,7 @@ class ParentHomeScreen extends StatefulWidget {
 }
 
 class _ParentHomeScreenState extends State<ParentHomeScreen> {
-  late PersistentAuthService _authService;
+  late AuthService _authService;
   final DatabaseService _databaseService = DatabaseService();
   List<StudentModel> _students = [];
 
@@ -44,7 +44,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _authService = Provider.of<PersistentAuthService>(context, listen: false);
+    _authService = Provider.of<AuthService>(context, listen: false);
     _checkProfileCompletion();
     _loadUserData();
     _loadSchoolData();
@@ -1664,8 +1664,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
   Future<void> _logout() async {
     try {
-      // تسجيل الخروج مع الحفاظ على البيانات للدخول السريع
-      await _authService.signOut(clearPersistedData: false);
+      await _authService.signOut(clearPersistedData: true);
       if (mounted) {
         context.go('/login');
       }

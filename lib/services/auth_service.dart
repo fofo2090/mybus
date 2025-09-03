@@ -4,23 +4,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import 'unified_notification_service.dart';
-// تم حذف الخدمات المتكررة واستبدالها بالخدمة الموحدة
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Private variables
   UserModel? _currentUserData;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isInitialized = false;
 
-  // Getters
   User? get currentUser => _auth.currentUser;
   UserModel? get currentUserData => _currentUserData;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => currentUser != null;
+  bool get isAuthenticated => currentUser != null && _currentUserData != null;
 
   // التحقق من وجود تسجيل دخول محفوظ صالح
   Future<bool> get hasSavedLogin async {
@@ -149,123 +147,58 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Sign in with email and password
   Future<UserModel?> signInWithEmailAndPassword({
     required String email,
     required String password,
+    bool rememberMe = true,
   }) async {
     try {
       _setLoading(true);
       _setError(null);
 
-      debugPrint('🔐 محاولة تسجيل الدخول للمستخدم: $email');
+      debugPrint('🔐 Signing in user: $email (rememberMe: $rememberMe)');
 
-      // محاولة تسجيل الدخول مع معالجة خاصة لخطأ PigeonUserDetails
-      UserCredential? result;
-
+      UserCredential result;
       try {
         result = await _auth.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
       } catch (e) {
-        // إذا كان الخطأ متعلق بـ PigeonUserDetails، نحاول مرة أخرى
-        if (e.toString().contains('PigeonUserDetails') ||
-            e.toString().contains('List<Object?>')) {
-          debugPrint('🔄 إعادة محاولة تسجيل الدخول بسبب خطأ PigeonUserDetails...');
+        if (e.toString().contains('PigeonUserDetails') || e.toString().contains('List<Object?>')) {
+          debugPrint('🔄 Retrying login due to PigeonUserDetails error...');
           await Future.delayed(const Duration(milliseconds: 500));
-
-          // محاولة ثانية
-          result = await _auth.signInWithEmailAndPassword(
-            email: email,
-            password: password,
-          );
+          result = await _auth.signInWithEmailAndPassword(email: email, password: password);
         } else {
           rethrow;
         }
       }
 
       if (result.user != null) {
-        debugPrint('✅ تم تسجيل الدخول بنجاح، جلب بيانات المستخدم...');
-
-        // انتظار قصير للتأكد من تحديث حالة المصادقة
-        await Future.delayed(const Duration(milliseconds: 300));
-
-        final userData = await getUserData(result.user!.uid);
-
-        if (userData != null) {
-          debugPrint('✅ تم جلب بيانات المستخدم: ${userData.name} (${userData.userType})');
-          
-          // إرسال إشعار ترحيب
-          try {
-            await UnifiedNotificationService().sendWelcomeNotification(userData.name);
-          } catch (e) {
-            debugPrint('⚠️ خطأ في إرسال إشعار الترحيب: $e');
+        debugPrint('✅ Login successful, loading user data...');
+        await _loadUserData(result.user!.uid);
+        if (_currentUserData != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('remember_me', rememberMe);
+          if (rememberMe) {
+            await _saveAuthState(result.user!);
           }
+          debugPrint('✅ User signed in: ${_currentUserData!.name} (${_currentUserData!.userType})');
+          return _currentUserData;
         } else {
-          debugPrint('⚠️ لم يتم العثور على بيانات المستخدم في Firestore');
-
-          // إذا لم نجد بيانات المستخدم، نحاول إنشاؤها
-          if (email == 'admin@mybus.com') {
-            debugPrint('🔧 إنشاء بيانات الأدمن المفقودة...');
-            final adminUser = UserModel(
-              id: result.user!.uid,
-              email: email,
-              name: 'مدير النظام',
-              phone: '0501234567',
-              userType: UserType.admin,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            );
-
-            await _firestore
-                .collection('users')
-                .doc(result.user!.uid)
-                .set(adminUser.toMap());
-
-            return adminUser;
-          } else if (email == 'supervisor@mybus.com') {
-            debugPrint('🔧 إنشاء بيانات المشرف المفقودة...');
-            final supervisorUser = UserModel(
-              id: result.user!.uid,
-              email: email,
-              name: 'أحمد المشرف',
-              phone: '0507654321',
-              userType: UserType.supervisor,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            );
-
-            await _firestore
-                .collection('users')
-                .doc(result.user!.uid)
-                .set(supervisorUser.toMap());
-
-            return supervisorUser;
-          }
+          throw Exception('Failed to load user data');
         }
-
-        // تم استبدال خدمات الإشعارات بالخدمة الموحدة
-        debugPrint('✅ User logged in successfully');
-
-        return userData;
+      } else {
+        throw Exception('Failed to sign in');
       }
-      return null;
     } on FirebaseAuthException catch (e) {
-      debugPrint('❌ خطأ في المصادقة: ${e.code} - ${e.message}');
-      throw _handleAuthException(e);
+      final errorMessage = _handleAuthException(e);
+      _setError(errorMessage);
+      throw Exception(errorMessage);
     } catch (e) {
-      debugPrint('❌ خطأ عام في تسجيل الدخول: $e');
-
-      // إذا كان الخطأ متعلق بـ PigeonUserDetails، نعطي رسالة أوضح
-      if (e.toString().contains('PigeonUserDetails') ||
-          e.toString().contains('List<Object?>')) {
-        _setError('خطأ في إعدادات Firebase. يرجى إعادة تشغيل التطبيق.');
-        throw Exception('خطأ في إعدادات Firebase. يرجى إعادة تشغيل التطبيق.');
-      }
-
-      _setError('خطأ في تسجيل الدخول: $e');
-      throw Exception('خطأ في تسجيل الدخول: $e');
+      final errorMessage = 'Login error: $e';
+      _setError(errorMessage);
+      throw Exception(errorMessage);
     } finally {
       _setLoading(false);
     }
@@ -344,35 +277,61 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Sign out with option to keep login data
-  Future<void> signOut({bool forceLogout = false}) async {
+  Future<void> signOut({bool clearPersistedData = false}) async {
     try {
       _setLoading(true);
-
-      // تم استبدال خدمات الإشعارات بالخدمة الموحدة
-      debugPrint('✅ Stopping notification services before logout');
+      debugPrint('🔓 Signing out user (clearPersistedData: $clearPersistedData)');
 
       await _auth.signOut();
-      _currentUserData = null;
-      _setError(null);
       
-      // مسح معلومات تسجيل الدخول فقط إذا كان تسجيل خروج إجباري
-      if (forceLogout) {
-        await _clearLoginInfo();
-        debugPrint('✅ Forced logout - all login data cleared');
+      if (clearPersistedData) {
+        await _clearPersistedAuth();
+        debugPrint('✅ Persisted data cleared');
       } else {
-        // الحفاظ على بعض البيانات للدخول السريع
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('is_logged_in', false);
-        debugPrint('✅ Soft logout - keeping some data for quick login');
+        debugPrint('✅ Signed out but kept some data for quick login');
       }
       
+      _currentUserData = null;
+      _setError(null);
       notifyListeners();
+
+      debugPrint('✅ User signed out successfully');
     } catch (e) {
-      _setError('خطأ في تسجيل الخروج: $e');
-      throw Exception('خطأ في تسجيل الخروج: $e');
+      final errorMessage = 'Logout error: $e';
+      _setError(errorMessage);
+      throw Exception(errorMessage);
     } finally {
       _setLoading(false);
+    }
+  }
+
+  Future<void> _saveAuthState(User user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_logged_in', true);
+      await prefs.setString('user_id', user.uid);
+      await prefs.setString('user_email', user.email ?? '');
+      await prefs.setInt('login_timestamp', DateTime.now().millisecondsSinceEpoch);
+      await prefs.setBool('remember_me', true);
+      debugPrint('✅ Auth state saved for user: ${user.email}');
+    } catch (e) {
+      debugPrint('❌ Error saving auth state: $e');
+    }
+  }
+
+  Future<void> _clearPersistedAuth() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('is_logged_in');
+      await prefs.remove('user_id');
+      await prefs.remove('user_email');
+      await prefs.remove('login_timestamp');
+      await prefs.remove('remember_me');
+      debugPrint('✅ Persisted auth cleared');
+    } catch (e) {
+      debugPrint('❌ Error clearing persisted auth: $e');
     }
   }
 

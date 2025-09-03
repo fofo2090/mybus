@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/auth_service.dart';
 import '../../services/database_service.dart';
@@ -16,7 +17,7 @@ class SupervisorProfileScreen extends StatefulWidget {
 }
 
 class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
-  final AuthService _authService = AuthService();
+  late AuthService _authService;
   final DatabaseService _databaseService = DatabaseService();
   final _formKey = GlobalKey<FormState>();
   
@@ -41,6 +42,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _authService = Provider.of<AuthService>(context, listen: false);
     _loadProfile();
   }
 

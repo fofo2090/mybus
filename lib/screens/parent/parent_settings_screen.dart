@@ -17,7 +17,7 @@ class ParentSettingsScreen extends StatefulWidget {
 }
 
 class _ParentSettingsScreenState extends State<ParentSettingsScreen> {
-  final AuthService _authService = AuthService();
+  late AuthService _authService;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   final _formKey = GlobalKey<FormState>();
@@ -34,6 +34,7 @@ class _ParentSettingsScreenState extends State<ParentSettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _authService = Provider.of<AuthService>(context, listen: false);
     _loadUserData();
   }
 

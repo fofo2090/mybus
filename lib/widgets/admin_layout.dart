@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'admin_bottom_nav.dart';
 import '../services/auth_service.dart';
 
@@ -81,7 +82,8 @@ class AdminLayout extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     try {
-      await AuthService().signOut();
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.signOut(clearPersistedData: true); // Admin logout should clear session
       if (context.mounted) {
         context.go('/login');
       }

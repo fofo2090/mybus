@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../main.dart';
-import '../services/persistent_auth_service.dart';
+import '../services/auth_service.dart';
 import '../models/user_model.dart';
 import '../routes/app_routes.dart';
 import '../utils/background_utils.dart';
@@ -72,17 +72,17 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (mounted) {
       try {
-        // الحصول على خدمة المصادقة المستمرة
-        final persistentAuthService = Provider.of<PersistentAuthService>(context, listen: false);
+        // الحصول على خدمة المصادقة
+        final authService = Provider.of<AuthService>(context, listen: false);
         
         // التأكد من تهيئة الخدمة
-        await persistentAuthService.initialize();
+        await authService.initialize();
         
         // فحص حالة المصادقة
-        if (persistentAuthService.isAuthenticated && persistentAuthService.currentUserData != null) {
+        if (authService.isLoggedIn && authService.currentUserData != null) {
           // المستخدم مسجل دخول - الانتقال حسب نوع المستخدم
-          print('✅ User is authenticated: ${persistentAuthService.currentUserData!.name}');
-          _navigateBasedOnUserType(persistentAuthService.currentUserData!.userType);
+          print('✅ User is authenticated: ${authService.currentUserData!.name}');
+          _navigateBasedOnUserType(authService.currentUserData!.userType);
         } else {
           // المستخدم غير مسجل دخول - الانتقال لصفحة تسجيل الدخول
           print('⚠️ User is not authenticated, navigating to login');

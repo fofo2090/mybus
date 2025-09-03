@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
 import '../services/database_service.dart';
 
 class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -157,7 +159,8 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Future<void> _logout(BuildContext context) async {
     try {
-      await FirebaseAuth.instance.signOut();
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.signOut(clearPersistedData: true); // Admin logout should clear session
       if (context.mounted) {
         context.go('/login');
       }

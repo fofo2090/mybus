@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'admin_notification_service.dart';
 import 'parent_notification_service.dart';
 import 'supervisor_notification_service.dart';
+import 'notification_dialog_service.dart';
 
 /// خدمة Firebase Cloud Messaging المتكاملة
 /// تدعم الإشعارات في جميع حالات التطبيق: نشط، خلفية، مغلق
@@ -244,18 +245,10 @@ class FCMService {
     debugPrint('📱 Body: ${message.notification?.body}');
     debugPrint('📱 Data: ${message.data}');
 
-    // Manually display a local notification to ensure it has the desired appearance and sound.
-    final title = message.notification?.title ?? 'إشعار جديد';
-    final body = message.notification?.body ?? '';
-    final channelId = message.data['channelId'] as String? ?? 'mybus_notifications';
+    // Use the NotificationDialogService to show an in-app dialog
+    NotificationDialogService().showNotificationDialog(message);
 
-    await _displayLocalNotification(
-      title: title,
-      body: body,
-      data: Map<String, String>.from(message.data),
-      channelId: channelId,
-    );
-    debugPrint('✅ Manually displayed foreground notification.');
+    debugPrint('✅ Displayed in-app notification dialog.');
   }
 
   /// التحقق من نوع المستخدم وعرض الإشعار المناسب

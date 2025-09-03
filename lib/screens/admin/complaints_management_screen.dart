@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../../services/auth_service.dart';
 import '../../services/database_service.dart';
 import '../../services/notification_service.dart';
 import '../../models/complaint_model.dart';
@@ -954,7 +955,8 @@ class _ComplaintsManagementScreenState extends State<ComplaintsManagementScreen>
 
   Future<void> _logout(BuildContext context) async {
     try {
-      await FirebaseAuth.instance.signOut();
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.signOut();
       if (context.mounted) {
         context.go('/login');
       }
