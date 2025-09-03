@@ -4018,4 +4018,8 @@ class DatabaseService {
     // Stub
     await _firestore.collection('behavior_evaluations').doc(evaluation.id).set(evaluation.toMap());
   }
+
+  Future<BusModel?> getBusById(String busId) async {
+    return getBus(busId);
+  }
 }
