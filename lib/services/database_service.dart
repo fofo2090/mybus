@@ -867,7 +867,7 @@ class DatabaseService {
   }
 
   // Get bus by ID
-  Future<BusModel?> getBusById(String busId) async {
+  Future<BusModel?> getBus(String busId) async {
     try {
       // Check rate limit
       final currentUserId = _getCurrentUserId();
@@ -3811,7 +3811,7 @@ class DatabaseService {
 
   Future<SupervisorAssignmentModel?> getActiveSupervisorForBus(String busId, {TripDirection? direction}) async {
     try {
-      final bus = await getBusById(busId);
+      final bus = await getBus(busId);
       if (bus != null && bus.route.isNotEmpty) {
         return await getActiveSupervisorForRoute(bus.route, direction: direction);
       }
@@ -3945,9 +3945,9 @@ class DatabaseService {
     return _firestore.collection('students').where('busId', isNotEqualTo: null).snapshots().map((snapshot) => snapshot.docs.length);
   }
 
-  Stream<List<SupervisorEvaluationModel>> getSupervisorEvaluationReports() {
+  Stream<List<Map<String, dynamic>>> getSupervisorEvaluationReports() {
     return _firestore.collection('supervisor_evaluations').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => SupervisorEvaluationModel.fromMap(doc.data())).toList();
+      return snapshot.docs.map((doc) => doc.data()).toList();
     });
   }
 
@@ -3980,12 +3980,17 @@ class DatabaseService {
     await _firestore.collection('supervisor_assignments').doc(assignment.id).update(assignment.toMap());
   }
 
-  Future<void> sendNotificationToParent(String parentId, String title, String body) async {
-    // Stub
-    await NotificationService().sendNotificationToUser(
-      userId: parentId,
+  Future<void> sendNotificationToParent({
+    required String parentId,
+    required String title,
+    required String message,
+    Map<String, dynamic>? data,
+  }) async {
+    await NotificationService().sendGeneralNotification(
+      recipientId: parentId,
       title: title,
-      body: body,
+      body: message,
+      data: data,
     );
   }
 
@@ -4000,7 +4005,11 @@ class DatabaseService {
             .toList());
   }
 
-  Future<List<StudentBehaviorEvaluation>> getBehaviorEvaluations(String supervisorId, int month, int year) async {
+  Future<List<StudentBehaviorEvaluation>> getBehaviorEvaluations({
+    required String supervisorId,
+    required int month,
+    required int year,
+  }) async {
     // Stub
     return [];
   }
