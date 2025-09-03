@@ -3743,4 +3743,26 @@ class DatabaseService {
     TripDirection? direction,
   }) async {
     try {
-      debugPrint('🔍 Looking for supervisor for parent: $parentId, d
+      debugPrint('🔍 Looking for supervisor for parent: $parentId, direction: $direction');
+
+      // Get parent's students
+      final students = await getStudentsByParentOnce(parentId);
+      if (students.isEmpty) {
+        debugPrint('⚠️ No students found for parent');
+        return null;
+      }
+
+      // For simplicity, we'll use the first student's route
+      final firstStudent = students.first;
+      if (firstStudent.busRoute.isEmpty) {
+        debugPrint('⚠️ First student has no assigned route');
+        return null;
+      }
+
+      return await getActiveSupervisorForRoute(firstStudent.busRoute, direction: direction);
+    } catch (e) {
+      debugPrint('❌ Error getting supervisor for parent student: $e');
+      return null;
+    }
+  }
+}
