@@ -67,32 +67,43 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthStatus() async {
-    // انتظار انتهاء الأنيميشن - زيادة الوقت ليشاهد المستخدم الشاشة بوضوح
     await Future.delayed(const Duration(seconds: 3));
 
-    if (mounted) {
-      try {
-        // الحصول على خدمة المصادقة المستمرة
-        final persistentAuthService = Provider.of<PersistentAuthService>(context, listen: false);
-        
-        // التأكد من تهيئة الخدمة
-        await persistentAuthService.initialize();
-        
-        // فحص حالة المصادقة
-        if (persistentAuthService.isAuthenticated && persistentAuthService.currentUserData != null) {
-          // المستخدم مسجل دخول - الانتقال حسب نوع المستخدم
-          print('✅ User is authenticated: ${persistentAuthService.currentUserData!.name}');
-          _navigateBasedOnUserType(persistentAuthService.currentUserData!.userType);
-        } else {
-          // المستخدم غير مسجل دخول - الانتقال لصفحة تسجيل الدخول
-          print('⚠️ User is not authenticated, navigating to login');
-          _navigateToLogin();
-        }
-      } catch (e) {
-        print('❌ Error checking auth status: $e');
-        // في حالة الخطأ - الانتقال لتسجيل الدخول
+    if (!mounted) return;
+
+    final authService = Provider.of<PersistentAuthService>(context, listen: false);
+    await authService.initialize();
+
+    // First, check if the service is already authenticated from the initialize() call.
+    if (authService.isAuthenticated && authService.currentUserData != null) {
+      print('✅ User already authenticated on splash screen init: ${authService.currentUserData!.name}');
+      _navigateBasedOnUserType(authService.currentUserData!.userType);
+      return;
+    }
+
+    // If not, it means we need to wait for the auth state to be restored by Firebase.
+    // The authStateChanges stream is the source of truth.
+    final user = await authService.authStateChanges.first;
+
+    if (!mounted) return;
+
+    if (user != null) {
+      // The user object is available, but we might need to load the user data from Firestore.
+      // The initialize() call should have loaded it if the session was persisted correctly.
+      if (authService.currentUserData == null || authService.currentUserData!.id != user.uid) {
+         await authService.initialize(); // Ensure data is loaded
+      }
+
+      if (authService.currentUserData != null) {
+        print('✅ User authenticated via stream: ${authService.currentUserData!.name}');
+        _navigateBasedOnUserType(authService.currentUserData!.userType);
+      } else {
+        print('❌ User authenticated via stream but no data, navigating to login');
         _navigateToLogin();
       }
+    } else {
+      print('⚠️ No user from stream, navigating to login');
+      _navigateToLogin();
     }
   }
 

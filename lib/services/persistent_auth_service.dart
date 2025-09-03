@@ -108,8 +108,10 @@ class PersistentAuthService extends ChangeNotifier {
         await _loadUserData(currentUser.uid);
         await _updateNotificationService();
       } else {
-        debugPrint('⚠️ Firebase user not authenticated, clearing saved session...');
-        await _clearPersistedAuth();
+        // We will not clear the persisted auth here.
+        // The authStateChanges listener will handle the case where the user is truly signed out.
+        // This prevents a race condition on app startup.
+        debugPrint('⚠️ Firebase user not authenticated at this moment. Waiting for authStateChanges listener.');
       }
     } catch (e) {
       debugPrint('❌ Error checking persisted auth: $e');
