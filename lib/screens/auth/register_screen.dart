@@ -3,10 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../services/persistent_auth_service.dart';
 import '../../models/user_model.dart';
-import '../../utils/background_utils.dart';
-import '../../utils/responsive_helper.dart';
+import '../../utils/navigation_helper.dart';
+import '../../utils/ui_helper.dart';
+import '../../widgets/custom_text_field.dart';
 import '../../widgets/animated_background.dart';
-import '../../widgets/responsive_text.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,16 +50,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (user != null && mounted) {
-        context.go('/parent');
+        NavigationHelper.navigateToHome(context, user.userType);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
-        );
+        NavigationHelper.showErrorSnackBar(context, e.toString());
       }
     }
   }
@@ -263,7 +258,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 32),
                         
                         // Register Button
-                        Consumer<AuthService>(
+                        Consumer<PersistentAuthService>(
                           builder: (context, authService, child) {
                             return ElevatedButton(
                               onPressed: authService.isLoading ? null : _register,
