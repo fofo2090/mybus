@@ -4342,6 +4342,28 @@ select[name="priority"] option[value="normal"] {
     }
 }
 
+/* Increase icon sizes for better web visibility */
+.sidebar-nav .nav-link i {
+    font-size: 1.5em; /* Larger icons in the sidebar */
+    width: 30px; /* Adjust width to match new size */
+}
+
+.stat-card .icon {
+    font-size: 3.5rem; /* Larger icons on stat cards */
+}
+
+.navbar .btn i, .navbar .brand-icon i {
+    font-size: 1.4em; /* Larger icons in the navbar */
+}
+
+.action-buttons .btn i {
+    font-size: 1.2em; /* Slightly larger icons for action buttons */
+}
+
+.modal-header h5 i, .modal-footer .btn i {
+    font-size: 1.2em; /* Icons in modal headers and footers */
+}
+
 /* Reports Page Styles */
 .distribution-item {
     padding: 15px;
